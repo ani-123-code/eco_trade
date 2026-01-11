@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Header height variable used to offset fixed header from page content */
+    --header-height: 72px; /* safe default, will be updated by Header component on mount/resize */
+    /* Professional Green Color Palette */
+    --color-primary: 22 163 74;      /* green-600 */
+    --color-primary-dark: 21 128 61; /* green-700 */
+    --color-primary-light: 134 239 172; /* green-300 */
+    --color-secondary: 16 185 129;   /* emerald-500 */
+    --color-accent: 34 197 94;       /* green-500 */
+    --color-success: 34 197 94;      /* green-500 */
+    --color-warning: 251 146 60;     /* orange-400 */
+    --color-error: 239 68 68;        /* red-500 */
+
+    /* Condition badges with green theme */
+    --color-like-new: 34 197 94;     /* green-500 */
+    --color-excellent: 22 163 74;    /* green-600 */
+    --color-good: 74 222 128;        /* green-400 */
+    --color-fair: 251 146 60;        /* orange-400 */
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    background-color: #ffffff;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, rgb(22 163 74) 0%, rgb(34 197 94) 100%);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(5 150 105) 100%);
+  }
+
+  .gradient-green {
+    background: linear-gradient(135deg, rgb(34 197 94) 0%, rgb(74 222 128) 100%);
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.slider-container {
+  width: 100%;
+  overflow: hidden;
+}
