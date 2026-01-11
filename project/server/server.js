@@ -1,8 +1,11 @@
 require('dotenv').config();
 const express = require('express');
+const http = require('http');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const initializeAdmin = require('./middlewares/admin');
+const { initializeAdmin } = require('./middlewares/admin');
+const { initializeSocket } = require('./socket/socketHandler');
+const { startSchedulers } = require('./utils/auctionScheduler');
 const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
@@ -19,6 +22,7 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const stockNotificationRoutes = require('./routes/stockNotificationRoutes');
 const otpRoutes = require('./routes/otpRoutes');
 const businessRoutes = require('./routes/businessRoutes');
+const sellerRoutes = require('./routes/sellerRoutes');
 
 
 const app = express();
@@ -41,9 +45,11 @@ const corsOptions = {
       'http://127.0.0.1:5173',
       'http://127.0.0.1:5174',
       'http://127.0.0.1:3000',
-      // Production URL (update with your actual domain)
-      'https://reeown.com',
-      'https://www.reeown.com',
+      // Production URLs from environment variable
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+      // Fallback production URLs (update with your actual domain)
+      'https://ecotrade.com',
+      'https://www.ecotrade.com',
     ];
     
     if (allowedOrigins.includes(origin)) {
@@ -61,9 +67,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Connect to database
-connectDB();
-
 // Check Razorpay configuration on startup
 const razorpay = require('./config/razorpay');
 if (!razorpay) {
@@ -73,8 +76,19 @@ if (!razorpay) {
   console.log('✅ Razorpay configured successfully');
 }
 
-// Initialize admin
-initializeAdmin();
+// Connect to database and initialize admin after connection
+connectDB().then(() => {
+  // Initialize admin after database connection is established
+  initializeAdmin().catch(err => {
+    console.error('Failed to initialize admin:', err.message);
+  });
+}).catch(err => {
+  console.error('Database connection failed. Server will continue but some features may not work.');
+  // In development, allow server to start even if DB fails
+  if (process.env.NODE_ENV === 'production') {
+    process.exit(1);
+  }
+});
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -115,7 +129,16 @@ app.use('/api/recycle', recycleRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/stock-notifications', stockNotificationRoutes);
 app.use('/api/otp', otpRoutes);
-app.use('/api/business', businessRoutes); 
+app.use('/api/business', businessRoutes);
+app.use('/api/seller-requests', sellerRoutes);
+const materialRoutes = require('./routes/materialRoutes');
+const auctionRoutes = require('./routes/auctionRoutes');
+const rfqRoutes = require('./routes/rfqRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+app.use('/api/materials', materialRoutes);
+app.use('/api/auctions', auctionRoutes);
+app.use('/api/rfqs', rfqRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check route with environment info
 app.get('/api/health', (req, res) => {
@@ -131,7 +154,7 @@ app.get('/api/health', (req, res) => {
 // Root route
 app.get('/', (req, res) => {
   res.json({
-    message: 'Reeown API Server - Premium Refurbished Electronics',
+    message: 'EcoTrade API Server - Waste Materials Auction & RFQ Marketplace',
     environment: process.env.NODE_ENV || 'development',
     status: 'running',
     endpoints: {
@@ -177,11 +200,21 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.io
+initializeSocket(server);
+
+// Initialize Auction Scheduler
+startSchedulers();
+
+server.listen(PORT, () => {
   console.log(` Server running on port ${PORT}`);
   console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(` CORS enabled for: ${isDevelopment ? 'Development + Production URLs' : 'Production URL only'}`);
   console.log(`Database: ${process.env.MONGODB_URI ? 'Connected' : 'Not configured'}`);
+  console.log(` Socket.io initialized for real-time features`);
   
   if (isDevelopment) {
     console.log(` Development mode active`);

@@ -1,9 +1,9 @@
 function verificationEmailTemplate(email, verificationUrl, name) {
   return `
     <div style="font-family: Inter, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #064E3B; text-align: center;">Welcome to ${process.env.APP_NAME || 'Reeown'}!</h2>
+      <h2 style="color: #064E3B; text-align: center;">Welcome to ${process.env.APP_NAME || 'EcoTrade'}!</h2>
       <p>Hello ${name},</p>
-      <p>Thank you for registering with ${process.env.APP_NAME}. To complete your registration, please verify your email address by clicking the button below:</p>
+      <p>Thank you for registering with ${process.env.APP_NAME || 'EcoTrade'}. To complete your registration, please verify your email address by clicking the button below:</p>
       
       <div style="text-align: center; margin: 30px 0;">
           <a href="${verificationUrl}"
@@ -16,12 +16,12 @@ function verificationEmailTemplate(email, verificationUrl, name) {
       <p style="word-break: break-all; color: #666;">${verificationUrl}</p>
       
       <p style="margin-top: 30px; font-size: 14px; color: #666;">
-        This verification link will expire in 24 hours. If you didn't create an account with ${process.env.APP_NAME || 'Reeown'}, please ignore this email.
+        This verification link will expire in 24 hours. If you didn't create an account with ${process.env.APP_NAME || 'EcoTrade'}, please ignore this email.
       </p>
       
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
       <p style="font-size: 12px; color: #999; text-align: center;">
-        © ${new Date().getFullYear()} ${process.env.APP_NAME || 'Reeown'}. All rights reserved.
+        © ${new Date().getFullYear()} ${process.env.APP_NAME || 'EcoTrade'}. All rights reserved.
       </p>
     </div>
   `;
@@ -32,7 +32,7 @@ function passwordResetTemplate(email, resetUrl, name) {
     <div style="font-family: Inter, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #064E3B; text-align: center;">Password Reset Request</h2>
       <p>Hello ${name},</p>
-      <p>We received a request to reset your password for your ${process.env.APP_NAME} account. If you made this request, please click the button below to reset your password:</p>
+      <p>We received a request to reset your password for your ${process.env.APP_NAME || 'EcoTrade'} account. If you made this request, please click the button below to reset your password:</p>
       
       <div style="text-align: center; margin: 30px 0;">
         <a href="${resetUrl}"
@@ -50,7 +50,7 @@ function passwordResetTemplate(email, resetUrl, name) {
       
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
       <p style="font-size: 12px; color: #999; text-align: center;">
-        © ${new Date().getFullYear()} ${process.env.APP_NAME || 'Reeown'}. All rights reserved.
+        © ${new Date().getFullYear()} ${process.env.APP_NAME || 'EcoTrade'}. All rights reserved.
       </p>
     </div>
   `;
@@ -59,10 +59,10 @@ function passwordResetTemplate(email, resetUrl, name) {
 function welcomeEmailTemplate(email, name) {
   return `
     <div style="font-family: Inter, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #064E3B; text-align: center;">Welcome to ${process.env.APP_NAME || 'Reeown'}!</h2>
+      <h2 style="color: #064E3B; text-align: center;">Welcome to ${process.env.APP_NAME || 'EcoTrade'}!</h2>
       <p>Hello ${name},</p>
       <p>Congratulations! Your email has been successfully verified and your account is now active.</p>
-      <p>You can now enjoy all the features of ${process.env.APP_NAME}. Thank you for joining us!</p>
+      <p>You can now enjoy all the features of ${process.env.APP_NAME || 'EcoTrade'}. Thank you for joining us!</p>
       
       <div style="text-align: center; margin: 30px 0;">
         <a href="${process.env.FRONTEND_URL}/login"
@@ -77,7 +77,7 @@ function welcomeEmailTemplate(email, name) {
       
       <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
       <p style="font-size: 12px; color: #999; text-align: center;">
-        © ${new Date().getFullYear()} ${process.env.APP_NAME || 'Reeown'}. All rights reserved.
+        © ${new Date().getFullYear()} ${process.env.APP_NAME || 'EcoTrade'}. All rights reserved.
       </p>
     </div>
   `;

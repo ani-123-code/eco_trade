@@ -1,53 +1,52 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Mail, Phone, CreditCard as Edit, ChevronLeft, ChevronRight, Loader as Loader2, User, Eye } from 'lucide-react';
+import { Search, Mail, Phone, CreditCard as Edit, ChevronLeft, ChevronRight, Loader as Loader2, User, Eye, CheckCircle, Trash2, AlertTriangle, X } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
+import { adminAPI } from '../../api/AdminAPI';
+import { useToast } from '../../contexts/ToastContext';
 
 // Import the actions
 import { fetchAllUsers } from '../../store/slices/adminSlice';
-import { fetchAllOrders } from '../../store/slices/orderSlice';
 
 const AdminCustomers = () => {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.admin);
-  const { orders } = useSelector((state) => state.orders);
   const { user: currentUser } = useSelector((state) => state.auth);
+  const { showSuccess, showError } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [warnModalOpen, setWarnModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUserName, setSelectedUserName] = useState('');
+  const [warningMessage, setWarningMessage] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
   
   const customersPerPage = 5;
 
-  // Fetch customers and orders on component mount
+  // Fetch customers on component mount
   useEffect(() => {
     dispatch(fetchAllUsers());
-    dispatch(fetchAllOrders());
+    // Orders removed - EcoTrade uses auctions/RFQ instead
   }, [dispatch]);
 
-  // Helper function to get user orders
+  // Helper functions for EcoTrade (no orders, using auctions/RFQ instead)
   const getUserOrders = (userId) => {
-    if (!orders || !Array.isArray(orders)) return [];
-    return orders.filter(order => {
-      if (!order.user) return false;
-      return order.user === userId || order.user._id === userId;
-    });
+    // EcoTrade doesn't use orders - return empty array
+    return [];
   };
 
-  // Helper function to calculate total spent
   const calculateTotalSpent = (userOrders) => {
-    if (!userOrders || !Array.isArray(userOrders)) return 0;
-    return userOrders.reduce((total, order) => total + (order.total || 0), 0);
+    // EcoTrade doesn't track spending via orders
+    return 0;
   };
 
-  // Helper function to get last order date
   const getLastOrderDate = (userOrders) => {
-    if (!userOrders || !Array.isArray(userOrders) || userOrders.length === 0) return null;
-    return userOrders.reduce((latest, order) => {
-      const orderDate = new Date(order.createdAt);
-      return orderDate > latest ? orderDate : latest;
-    }, new Date(userOrders[0].createdAt));
+    // EcoTrade doesn't track order dates
+    return null;
   };
 
   // Filter customers based on search (excluding current admin user) and sort by newest first
@@ -106,13 +105,82 @@ const AdminCustomers = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const handleWarnUser = (userId, userName) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(userName);
+    setWarningMessage('');
+    setWarnModalOpen(true);
+  };
+
+  const handleDeleteUser = (userId, userName) => {
+    setSelectedUserId(userId);
+    setSelectedUserName(userName);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmWarnUser = async () => {
+    if (!warningMessage.trim()) {
+      showError('Please enter a warning message');
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const result = await adminAPI.warnUser(selectedUserId, warningMessage.trim());
+      if (result.success) {
+        showSuccess(`Warning sent to ${selectedUserName} successfully`);
+        setWarnModalOpen(false);
+        setWarningMessage('');
+        setSelectedUserId(null);
+        setSelectedUserName('');
+      } else {
+        showError(result.message || 'Failed to send warning');
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to send warning');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmDeleteUser = async () => {
+    setActionLoading(true);
+    try {
+      const result = await adminAPI.deleteUser(selectedUserId);
+      if (result.success) {
+        showSuccess(`User ${selectedUserName} deleted successfully`);
+        setDeleteModalOpen(false);
+        setSelectedUserId(null);
+        setSelectedUserName('');
+        dispatch(fetchAllUsers()); // Refresh users list
+      } else {
+        showError(result.message || 'Failed to delete user');
+      }
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to delete user');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const closeWarnModal = () => {
+    setWarnModalOpen(false);
+    setWarningMessage('');
+    setSelectedUserId(null);
+    setSelectedUserName('');
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setSelectedUserId(null);
+    setSelectedUserName('');
+  };
+
   // Find the customer to display details
   const customerDetails = selectedCustomer
     ? users.find(customer => customer._id === selectedCustomer)
     : null;
 
-  // Get customer orders for details view
-  const customerOrders = customerDetails ? getUserOrders(customerDetails._id) : [];
 
   // Show loading state
   if (loading && users.length === 0) {
@@ -199,10 +267,10 @@ const AdminCustomers = () => {
                       Contact
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Orders
+                      User Type
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Total Spent
+                      Verification
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       Status
@@ -214,10 +282,7 @@ const AdminCustomers = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
                   {currentCustomers.map((customer) => {
-                    const userOrders = getUserOrders(customer._id);
-                    const totalSpent = calculateTotalSpent(userOrders);
-                    const lastOrderDate = getLastOrderDate(userOrders);
-                    const isActive = userOrders.length > 0; 
+                    const isActive = customer.isVerified; 
                     
                     return (
                       <tr key={customer._id} className="hover:bg-gray-50 transition-colors duration-150">
@@ -235,10 +300,7 @@ const AdminCustomers = () => {
                                 {customer.name}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {lastOrderDate 
-                                  ? `Last order: ${formatDate(lastOrderDate)}`
-                                  : 'No orders yet'
-                                }
+                                Joined {formatDate(customer.createdAt)}
                               </div>
                             </div>
                           </div>
@@ -258,30 +320,66 @@ const AdminCustomers = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{userOrders.length}</div>
-                          <div className="text-xs text-gray-500">orders</div>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            customer.userType === 'seller'
+                              ? 'bg-purple-100 text-purple-800'
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {customer.userType ? customer.userType.charAt(0).toUpperCase() + customer.userType.slice(1) : 'N/A'}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-green-700">₹{totalSpent.toFixed(2)}</div>
+                          {customer.isVerified ? (
+                            <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
+                            </span>
+                          ) : (
+                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
+                              customer.verificationStatus === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {customer.verificationStatus ? customer.verificationStatus.charAt(0).toUpperCase() + customer.verificationStatus.slice(1) : 'Pending'}
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-3 py-1 inline-flex text-xs font-medium rounded-full border ${getStatusClass(
-                              isActive ? 'active' : 'inactive'
+                              customer.isVerified ? 'active' : 'inactive'
                             )}`}
                           >
-                            {isActive ? 'Active' : 'Inactive'}
+                            {customer.isVerified ? 'Active' : 'Inactive'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleViewCustomer(customer._id)}
-                            className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-[#1a2f4a] transition-colors duration-150"
-                            title="View Details"
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
-                            View
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleViewCustomer(customer._id)}
+                              className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition-colors duration-150"
+                              title="View Details"
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              View
+                            </button>
+                            <button
+                              onClick={() => handleWarnUser(customer._id, customer.name)}
+                              className="inline-flex items-center px-3 py-1.5 bg-yellow-600 text-white text-xs font-medium rounded-md hover:bg-yellow-700 transition-colors duration-150"
+                              title="Warn User"
+                            >
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Warn
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(customer._id, customer.name)}
+                              className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors duration-150"
+                              title="Delete User"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -315,10 +413,7 @@ const AdminCustomers = () => {
           {/* Mobile Card View */}
           <div className="lg:hidden space-y-4 mb-6">
             {currentCustomers.map((customer) => {
-              const userOrders = getUserOrders(customer._id);
-              const totalSpent = calculateTotalSpent(userOrders);
-              const lastOrderDate = getLastOrderDate(userOrders);
-              const isActive = userOrders.length > 0;
+              const isActive = customer.isVerified;
               
               return (
                 <div key={customer._id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
@@ -332,7 +427,7 @@ const AdminCustomers = () => {
                       <div className="ml-3 flex-1 min-w-0">
                         <h3 className="text-sm font-medium text-gray-900 truncate">{customer.name}</h3>
                         <p className="text-xs text-gray-500 mt-1">
-                          {lastOrderDate ? `Last order: ${formatDate(lastOrderDate)}` : 'No orders yet'}
+                          Joined {formatDate(customer.createdAt)}
                         </p>
                       </div>
                     </div>
@@ -359,23 +454,58 @@ const AdminCustomers = () => {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <div className="flex space-x-4 text-sm">
+                    <div className="flex flex-col space-y-1 text-sm">
                       <div>
-                        <span className="text-gray-500">Orders:</span>
-                        <span className="font-medium text-gray-900 ml-1">{userOrders.length}</span>
+                        <span className="text-gray-500">Type:</span>
+                        <span className={`ml-1 px-2 py-0.5 text-xs font-medium rounded-full ${
+                          customer.userType === 'seller'
+                            ? 'bg-purple-100 text-purple-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {customer.userType ? customer.userType.charAt(0).toUpperCase() + customer.userType.slice(1) : 'N/A'}
+                        </span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Spent:</span>
-                        <span className="font-semibold text-green-700 ml-1">₹{totalSpent.toFixed(2)}</span>
+                        <span className="text-gray-500">Verification:</span>
+                        {customer.isVerified ? (
+                          <span className="ml-1 inline-flex items-center text-xs text-green-800 bg-green-100 rounded-full px-2 py-0.5">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Verified
+                          </span>
+                        ) : (
+                          <span className={`ml-1 px-2 py-0.5 text-xs font-medium rounded-full ${
+                            customer.verificationStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {customer.verificationStatus ? customer.verificationStatus.charAt(0).toUpperCase() + customer.verificationStatus.slice(1) : 'Pending'}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleViewCustomer(customer._id)}
-                      className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-[#1a2f4a] transition-colors duration-150"
-                    >
-                      <Eye className="h-3 w-3 mr-1" />
-                      View
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleViewCustomer(customer._id)}
+                        className="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 transition-colors duration-150"
+                      >
+                        <Eye className="h-3 w-3 mr-1" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleWarnUser(customer._id, customer.name)}
+                        className="inline-flex items-center px-3 py-1.5 bg-yellow-600 text-white text-xs font-medium rounded-md hover:bg-yellow-700 transition-colors duration-150"
+                      >
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Warn
+                      </button>
+                      <button
+                        onClick={() => handleDeleteUser(customer._id, customer.name)}
+                        className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition-colors duration-150"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -517,10 +647,10 @@ const AdminCustomers = () => {
                       <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Status</label>
                       <span
                         className={`inline-flex px-3 py-1 text-sm font-medium rounded-full border ${getStatusClass(
-                          customerOrders.length > 0 ? 'active' : 'inactive'
+                          customerDetails.isVerified ? 'active' : 'inactive'
                         )}`}
                       >
-                        {customerOrders.length > 0 ? 'Active' : 'Inactive'}
+                        {customerDetails.isVerified ? 'Active' : 'Inactive'}
                       </span>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg flex-1">
@@ -532,72 +662,46 @@ const AdminCustomers = () => {
               </div>
             </div>
             
-            {/* Order History */}
+            {/* Account Information */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="px-6 py-4 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-900">Order History</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Account Information</h2>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-green-600 text-white p-4 rounded-lg text-center">
-                    <div className="text-xs font-medium uppercase tracking-wider opacity-80">Total Orders</div>
-                    <div className="text-2xl font-bold mt-1">
-                      {customerOrders.length}
+                    <div className="text-xs font-medium uppercase tracking-wider opacity-80">User Type</div>
+                    <div className="text-lg font-bold mt-1 capitalize">
+                      {customerDetails.userType || 'N/A'}
                     </div>
                   </div>
-                  <div className="bg-emerald-500 text-white p-4 rounded-lg text-center">
-                    <div className="text-xs font-medium uppercase tracking-wider opacity-80">Total Spent</div>
-                    <div className="text-2xl font-bold mt-1">
-                      ₹{calculateTotalSpent(customerOrders).toFixed(2)}
+                  <div className={`text-white p-4 rounded-lg text-center ${
+                    customerDetails.isVerified ? 'bg-emerald-500' : 'bg-yellow-500'
+                  }`}>
+                    <div className="text-xs font-medium uppercase tracking-wider opacity-80">Verification</div>
+                    <div className="text-lg font-bold mt-1 capitalize">
+                      {customerDetails.verificationStatus || 'Pending'}
                     </div>
                   </div>
                 </div>
                 
-                {customerOrders.length > 0 ? (
-                  <div>
-                    <div className="text-sm font-medium text-gray-700 mb-4">Recent Orders</div>
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      {customerOrders.reverse().slice(-5).map((order, index) => (
-                        <div key={order._id} className="border border-gray-200 rounded-lg p-4 hover:border-green-600 transition-colors duration-150">
-                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900 text-sm">
-                                Order #{order.orderId || `ORD-${index + 1}`}
-                              </div>
-                              <div className="text-xs text-gray-500 mt-1">
-                                {formatDate(order.createdAt)}
-                              </div>
-                              <div className="text-sm text-gray-600 mt-1">
-                                {order.items?.length || 0} items
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-start sm:items-end">
-                              <div className="font-semibold text-green-700 text-sm">
-                                ₹{order.total?.toFixed(2) || '0.00'}
-                              </div>
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium mt-2 ${
-                                order.orderStatus === 'delivered' ? 'bg-green-50 text-green-700 border border-green-200' : 
-                                order.paymentStatus === 'completed' ? 'bg-green-50 text-green-700 border border-green-200' : 
-                                'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                              }`}>
-                                {order.orderStatus === 'delivered' ? 'Delivered' : 
-                                 order.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                <div className="space-y-3">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="text-sm font-medium text-gray-700 mb-2">Verification Details</div>
+                    <div className="text-sm text-gray-600">
+                      {customerDetails.isVerified ? (
+                        <span className="text-green-600 font-medium">✓ Verified Account</span>
+                      ) : (
+                        <span className="text-yellow-600 font-medium">⏳ Pending Verification</span>
+                      )}
                     </div>
+                    {customerDetails.verifiedBy && (
+                      <div className="text-xs text-gray-500 mt-2">
+                        Verified by: {customerDetails.verifiedBy.name} on {formatDate(customerDetails.verifiedAt)}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Mail className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <div className="text-gray-500 text-sm">No orders found</div>
-                    <div className="text-xs text-gray-400 mt-1">This customer hasn't placed any orders yet</div>
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -611,6 +715,133 @@ const AdminCustomers = () => {
               <ChevronLeft className="h-4 w-4 mr-2" />
               Back to Customers
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Warn User Modal */}
+      {warnModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-full">
+                  <AlertTriangle className="h-6 w-6 text-yellow-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Warn User</h2>
+              </div>
+              <button
+                onClick={closeWarnModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                disabled={actionLoading}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                You are about to send a warning to <strong>{selectedUserName}</strong>. This will send them a notification and an email with your message.
+              </p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Warning Message <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={warningMessage}
+                  onChange={(e) => setWarningMessage(e.target.value)}
+                  placeholder="Enter the warning message for this user..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 resize-none"
+                  rows={6}
+                  disabled={actionLoading}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {warningMessage.length} characters
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <Button
+                variant="outline"
+                onClick={closeWarnModal}
+                disabled={actionLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={confirmWarnUser}
+                isLoading={actionLoading}
+                disabled={actionLoading || !warningMessage.trim()}
+                className="bg-yellow-600 hover:bg-yellow-700"
+              >
+                {actionLoading ? 'Sending...' : 'Send Warning'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-red-100 rounded-full">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Delete User</h2>
+              </div>
+              <button
+                onClick={closeDeleteModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                disabled={actionLoading}
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                Are you sure you want to delete <strong>{selectedUserName}</strong>?
+              </p>
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <p className="text-sm text-red-800">
+                  <strong>Warning:</strong> This action cannot be undone. All associated data including:
+                </p>
+                <ul className="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
+                  <li>User account and profile</li>
+                  <li>All auctions and materials created</li>
+                  <li>All bids placed</li>
+                  <li>All RFQs submitted</li>
+                </ul>
+                <p className="mt-2 text-sm text-red-800 font-semibold">
+                  Will be permanently deleted.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
+              <Button
+                variant="outline"
+                onClick={closeDeleteModal}
+                disabled={actionLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={confirmDeleteUser}
+                isLoading={actionLoading}
+                disabled={actionLoading}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {actionLoading ? 'Deleting...' : 'Delete User'}
+              </Button>
+            </div>
           </div>
         </div>
       )}

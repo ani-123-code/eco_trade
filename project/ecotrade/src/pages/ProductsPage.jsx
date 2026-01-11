@@ -1,15 +1,9 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { ListFilter as Filter, Grid2x2 as Grid, List, ChevronLeft, ChevronRight, ChevronDown, Check } from "lucide-react";
-import {
-  fetchProducts,
-  fetchTypes,
-  fetchCollections,
-} from "../store/slices/productSlice";
-import ProductCard from "../components/ui/ProductCard";
+import React, { useState, useEffect } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { ListFilter as Filter, Grid2x2 as Grid, List, ChevronDown, Check } from "lucide-react";
+import { materialAPI } from "../api/materialAPI";
+import { auctionAPI } from "../api/auctionAPI";
 import Button from "../components/ui/Button";
-import CustomSelect from "../components/ui/CustomSelect";
 
 // Helper component for collapsible filter sections
 const FilterSection = ({ title, children, isOpen, onToggle }) => (

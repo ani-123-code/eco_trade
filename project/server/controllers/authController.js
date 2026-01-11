@@ -24,6 +24,9 @@ const loginUser = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          userType: user.userType,
+          isVerified: user.isVerified,
+          verificationStatus: user.verificationStatus,
           phoneNumber: user.phoneNumber || '',
           address: user.address || '',
           city: user.city || '',
@@ -46,6 +49,9 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        userType: user.userType,
+        isVerified: user.isVerified,
+        verificationStatus: user.verificationStatus,
         phoneNumber: user.phoneNumber || '',
         address: user.address || '',
         city: user.city || '',
@@ -66,12 +72,17 @@ const loginUser = async (req, res) => {
 // @desc    Register new user
 // @route   POST /api/auth/register
 const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, userType } = req.body;
 
   try {
     // Input validation
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email, and password are required' });
+    if (!name || !email || !password || !userType) {
+      return res.status(400).json({ message: 'Name, email, password, and userType are required' });
+    }
+
+    // Validate userType
+    if (!['buyer', 'seller'].includes(userType)) {
+      return res.status(400).json({ message: 'userType must be either "buyer" or "seller"' });
     }
 
     // Check if user already exists
@@ -95,6 +106,9 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role: 'user',
+      userType,
+      isVerified: false,
+      verificationStatus: 'pending',
       isEmailVerified: false,
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationExpires
@@ -298,6 +312,9 @@ const getMe = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      userType: user.userType,
+      isVerified: user.isVerified,
+      verificationStatus: user.verificationStatus,
       phoneNumber: user.phoneNumber || '',
       address: user.address || '',
       city: user.city || '',
@@ -345,6 +362,9 @@ const updateProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      userType: user.userType,
+      isVerified: user.isVerified,
+      verificationStatus: user.verificationStatus,
       phoneNumber: user.phoneNumber || '',
       address: user.address || '',
       city: user.city || '',

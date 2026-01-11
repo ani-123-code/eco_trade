@@ -105,7 +105,7 @@ const ContactPage = () => {
 
   const handleLiveChat = () => {
     const whatsappNumber = '8861009443';
-    const message = 'Hello! I would like to get assistance with Reeown refurbished electronics.';
+    const message = 'Hello! I need assistance with EcoTrade circular economy marketplace.';
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${whatsappNumber}?text=${encodedMessage}`, '_blank');
   };
@@ -146,14 +146,14 @@ const ContactPage = () => {
   const faqs = getContactPageFAQs();
 
   return (
-    <div className="min-h-screen pt-20 pb-16">
+    <div className="min-h-screen pt-2 pb-2">
       {/* Hero Section */}
       <section className="py-16 bg-gradient-to-r from-green-600 to-green-700 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl font-bold mb-6">Get in Touch</h1>
             <p className="text-xl text-gray-200">
-              Have questions about our refurbished electronics? Our expert team is ready to help you find the perfect device for your needs.
+              Have questions about recyclable materials trading? Our expert team is ready to help you with auctions and sustainable trading solutions.
             </p>
           </div>
         </div>
@@ -385,10 +385,10 @@ const ContactPage = () => {
               <div className="bg-white/10 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Users className="h-10 w-10" />
               </div>
-              <h2 className="text-3xl font-bold mb-4">Ready to Go Green?</h2>
+              <h2 className="text-3xl font-bold mb-4">Ready to Trade Recyclable Materials?</h2>
               <p className="text-xl text-gray-200 mb-8">
                 Get instant support through WhatsApp or call our dedicated team at 88610 09443.
-                Experience quality certified refurbished electronics with expert guidance.
+                Start trading recyclable materials through our secure real-time auction platform.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 

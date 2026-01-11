@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 
 const HeroSlider = () => {
@@ -8,23 +9,23 @@ const HeroSlider = () => {
     {
       mobileImage: "https://images.pexels.com/photos/788946/pexels-photo-788946.jpeg?auto=compress&cs=tinysrgb&w=800",
       desktopImage: "https://images.pexels.com/photos/788946/pexels-photo-788946.jpeg?auto=compress&cs=tinysrgb&w=1920",
-      title: "Premium Refurbished Electronics",
-      subtitle: "Quality devices at unbeatable prices. Certified, tested, and warrantied.",
-      cta: "Shop Now"
+      title: "EcoTrade - Real-Time Auction Platform",
+      subtitle: "Participate in live auctions for e-waste, metals, plastics, paper, and FMGC materials. Bid in real-time and get the best deals.",
+      cta: "Browse Auctions"
     },
     {
       mobileImage: "https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=800",
       desktopImage: "https://images.pexels.com/photos/1229861/pexels-photo-1229861.jpeg?auto=compress&cs=tinysrgb&w=1920",
-      title: "Save Big on Top Brands",
-      subtitle: "Get up to 70% off on certified refurbished smartphones, laptops & more.",
-      cta: "Explore Deals"
+      title: "Live Bidding & Real-Time Updates",
+      subtitle: "Experience real-time auction bidding with instant updates. Track your bids, see rankings, and win the best materials.",
+      cta: "Browse Auctions"
     },
     {
       mobileImage: "https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=800",
       desktopImage: "https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=1920",
-      title: "Sustainable Tech, Smart Choice",
-      subtitle: "Reduce e-waste while enjoying premium technology. Good for you, great for the planet.",
-      cta: "Learn More"
+      title: "Sustainable Circular Economy",
+      subtitle: "Connect buyers and sellers through transparent auctions. Transform waste into value. Build a greener future together.",
+      cta: "Get Started"
     },
   ];
 
@@ -72,12 +73,12 @@ const HeroSlider = () => {
                   <p className="text-base md:text-xl lg:text-2xl text-gray-100 mb-6 md:mb-8 animate-fade-in">
                     {slide.subtitle}
                   </p>
-                  <a
-                    href="/products"
+                  <Link
+                    to={slide.cta === "Browse Auctions" ? "/auctions" : slide.cta === "Get Started" ? "/register" : "/auctions"}
                     className="inline-block px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     {slide.cta}
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

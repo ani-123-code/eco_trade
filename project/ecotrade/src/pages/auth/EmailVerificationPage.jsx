@@ -133,11 +133,27 @@ const EmailVerificationPage = () => {
 
             {verificationComplete && (
               <div className="text-center mb-6">
-                <div className="inline-flex items-center px-4 py-2 bg-green-50 rounded-md">
+                <div className="inline-flex items-center px-4 py-2 bg-green-50 rounded-md mb-4">
                   <CheckCircle className="w-4 h-4 mr-2 text-green-600" />
                   <span className="text-green-600">Email verified successfully!</span>
                 </div>
-                <p className="text-sm text-gray-600 mt-2">
+                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 text-left">
+                  <p className="text-sm text-yellow-800 font-medium mb-2">
+                    Next Step: Admin Verification
+                  </p>
+                  <p className="text-sm text-yellow-700">
+                    Your email is verified! <strong>Admin will verify your documents and account within 24-48 hours.</strong> 
+                    Once verified, you'll be able to {location.state?.userType === 'seller' 
+                      ? 'create and manage auctions for your materials' 
+                      : location.state?.userType === 'buyer'
+                      ? 'participate in real-time auctions and place bids'
+                      : 'use all platform features'}.
+                  </p>
+                  <p className="text-xs text-yellow-600 mt-2">
+                    You'll receive an email notification once your account is verified by admin.
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600 mt-4">
                   Redirecting you to login page...
                 </p>
               </div>

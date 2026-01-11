@@ -59,6 +59,33 @@ const userSchema = new mongoose.Schema({
   }],
   role: { type: String, enum: ['user', 'admin'], default: 'user' },
   
+  // User type for EcoTrade (buyer or seller)
+  userType: {
+    type: String,
+    enum: ['buyer', 'seller'],
+    required: false
+  },
+  
+  // Admin verification fields
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  verifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  verifiedAt: {
+    type: Date,
+    default: null
+  },
+  
   // Email verification fields
   isEmailVerified: {
     type: Boolean,

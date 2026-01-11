@@ -170,7 +170,7 @@ const FAQModal = ({ isOpen, onClose }) => {
                     leftIcon={<MessageCircle className="h-4 w-4" />}
                     onClick={() => {
                       const whatsappNumber = '+918008030203';
-                      const message = 'Hello! I have a question about Reeown refurbished electronics that\'s not covered in your FAQ section.';
+                      const message = 'Hello! I have a question about EcoTrade circular economy marketplace that\'s not covered in your FAQ section.';
                       const encodedMessage = encodeURIComponent(message);
                       window.open(`https://wa.me/${whatsappNumber.replace('+', '')}?text=${encodedMessage}`, '_blank');
                     }}

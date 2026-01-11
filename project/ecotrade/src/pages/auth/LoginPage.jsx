@@ -114,7 +114,7 @@ const LoginPage = () => {
           <div className="p-6 sm:p-8">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-              <p className="text-gray-600">Sign in to your Reeown account</p>
+              <p className="text-gray-600">Sign in to your EcoTrade account</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -199,7 +199,7 @@ const LoginPage = () => {
                   <div className="w-full border-t border-gray-300" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">New to Reeown?</span>
+                  <span className="px-2 bg-white text-gray-500">New to EcoTrade?</span>
                 </div>
               </div>
             </div>

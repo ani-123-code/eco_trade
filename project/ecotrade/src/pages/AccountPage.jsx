@@ -4,13 +4,16 @@ import { useDispatch, useSelector } from 'react-redux';
 import { User, Settings, Package, LogOut, CircleCheck as CheckCircle, CircleAlert as AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
 import { updateUserProfile, clearError, forgotPassword, clearSuccessMessage } from '../store/slices/authSlice';
 import { useToast } from '../contexts/ToastContext';
+import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import VerificationStatusBanner from '../components/VerificationStatusBanner';
 
 const AccountPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
+  const { user: authUser } = useAuth();
   const { user, isLoading, error, successMessage } = useSelector((state) => state.auth);
   
   const [isEditing, setIsEditing] = useState(false);
@@ -144,6 +147,9 @@ const AccountPage = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-8">My Account</h1>
+          
+          {/* Verification Status Banner */}
+          <VerificationStatusBanner user={authUser} />
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* Sidebar */}
@@ -396,7 +402,24 @@ const AccountPage = () => {
                           </div> */}
                           <div>
                             <span className="font-medium text-gray-700">Account Status:</span>
-                            <p className="text-green-600 font-medium">Active</p>
+                            <p className={`font-medium ${
+                              authUser?.isVerified 
+                                ? 'text-green-600' 
+                                : authUser?.verificationStatus === 'rejected'
+                                ? 'text-red-600'
+                                : 'text-yellow-600'
+                            }`}>
+                              {authUser?.isVerified 
+                                ? 'Verified' 
+                                : authUser?.verificationStatus === 'rejected'
+                                ? 'Rejected'
+                                : 'Pending Verification'}
+                            </p>
+                            {authUser?.userType && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Type: {authUser.userType.charAt(0).toUpperCase() + authUser.userType.slice(1)}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>

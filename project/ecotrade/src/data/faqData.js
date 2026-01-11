@@ -1,81 +1,55 @@
 export const faqData = [
-   {
-        id: 1,
-        question: 'What is your return policy for certified refurbished products?',
-        answer: 'We offer a 15-day return policy for all certified refurbished products. Items must be in the same condition as received with all original accessories and packaging. We provide a full refund if the product doesn\'t meet your expectations.'
-      },
-      {
-        id: 2,
-        question: 'How do you ensure the quality of certified refurbished products?',
-        answer: 'Every device goes through our rigorous 40-point quality check process. We test functionality, battery health, screen quality, and all hardware components. Each product is cleaned, sanitized, and comes with a detailed quality report and certification.'
-      },
-      {
-        id: 3,
-        question: 'What payment methods do you accept?',
-        answer: 'We accept all major credit/debit cards (Visa, MasterCard, American Express), UPI payments, net banking, and cash on delivery. We also offer EMI options for purchases above ₹5,000 with 0% interest for up to 12 months on select refurbished devices.'
-      },
-      {
-        id: 4,
-        question: 'How long is the warranty period?',
-        answer: 'Warranty periods vary by product condition and type, ranging from 6 months to 1 year. All refurbished devices come with our comprehensive warranty covering hardware defects. Check individual product pages for specific warranty details.'
-      },
-      {
-        id: 5,
-        question: 'What are your delivery charges and timelines?',
-        answer: 'Free delivery across India for orders above ₹2,000. For orders below ₹2,000, delivery charges are ₹150. Standard delivery takes 3-5 business days, while express delivery (next day) is available for ₹300 extra. We deliver Monday to Saturday, 9 AM to 7 PM.'
-      },
-      {
-        id: 6,
-        question: 'Can I sell my old device to Reeown?',
-        answer: 'Yes! We buy old smartphones, laptops, tablets, and other electronics. Get an instant quote on our website, schedule a free pickup, and receive payment immediately after device verification. We accept devices in any working condition.'
-      },
-      {
-        id: 7,
-        question: 'What is your device grading system?',
-        answer: 'We use a 4-tier grading system: Like New (95-100% condition), Excellent (85-94% condition), Good (70-84% condition), and Fair (60-69% condition). Each grade reflects the device\'s cosmetic and functional condition, clearly described on product pages.'
-      },
-      {
-        id: 8,
-        question: 'What does the certified refurbished warranty cover?',
-        answer: 'Our comprehensive warranty covers hardware defects, battery issues, and functional problems. It includes free repair or replacement of defective components. Warranty does not cover physical damage, water damage, or issues caused by misuse after purchase.'
-      },
-      {
-        id: 9,
-        question: 'Do you offer financing options?',
-        answer: 'Yes, we partner with leading financial institutions to offer easy EMI options. You can choose from 3, 6, 12, or 18-month EMI plans. We also offer 0% interest EMI on select refurbished devices during promotional periods. Credit approval is subject to bank terms.'
-      },
-      {
-        id: 10,
-        question: 'Do you provide data wiping services?',
-        answer: 'Yes, all devices undergo complete data wiping using industry-standard methods to ensure your personal information is completely removed. We follow strict data security protocols and provide a data deletion certificate upon request.'
-      },
-      {
-        id: 11,
-        question: 'What if my device needs repair after warranty?',
-        answer: 'We provide post-warranty repair services through our authorized service centers. Our skilled technicians use genuine spare parts and offer competitive pricing. We also provide a 3-month warranty on all repair work performed by our service team.'
-      },
-      {
-        id: 12,
-        question: 'How can I track my order?',
-        answer: 'You can track your order using the tracking number provided via SMS and email. Visit our website and enter your order number in the tracking section, or call our customer service team. You will receive updates at every stage of the delivery process.'
-      },
-      {
-        id: 13,
-        question: 'Do you offer bulk discounts for corporate or educational purchases?',
-        answer: 'Yes, we offer special pricing for bulk orders, corporate purchases, and educational institutions. Contact our sales team with your requirements, and we will provide a customized quote with volume discounts and flexible payment terms.'
-      },
-      {
-        id: 14,
-        question: 'Can I inspect the device before purchasing?',
-        answer: 'Yes! We offer device inspection at our experience centers. You can also request detailed photos and videos of specific devices. Our experts will showcase the features and condition to help you make an informed decision.'
-      },
-      {
-        id: 15,
-        question: 'What is your price matching policy?',
-        answer: 'We offer competitive pricing and will match legitimate competitor prices for identical refurbished products in the same condition grade. The competitor must be a verified seller, and the product must be in stock. Terms and conditions apply.'
-      }
+  {
+    id: 1,
+    question: 'How do I register as a buyer or seller?',
+    answer: 'During registration, you can choose to register as either a buyer or seller. After registration and email verification, your account will be pending admin verification. Once approved, you can start participating in auctions or listing materials.'
+  },
+  {
+    id: 2,
+    question: 'How does the auction system work?',
+    answer: 'Sellers list materials for auction with a starting price and end time. Buyers can place bids in real-time. The highest bidder at the end of the auction wins. All bidding happens in real-time with instant updates.'
+  },
+  {
+    id: 3,
+    question: 'What is Request for Quote (RFQ)?',
+    answer: 'RFQ allows buyers to request a custom quote from sellers for materials. Sellers can respond with their quoted price, and buyers can accept or reject the offer. This is useful when you need a specific quantity or have special requirements.'
+  },
+  {
+    id: 4,
+    question: 'What materials can I trade on EcoTrade?',
+    answer: 'EcoTrade supports trading of e-waste, FMGC (Fast Moving Consumer Goods), metals, plastics, and paper. All materials must be properly categorized and verified by admin before being listed.'
+  },
+  {
+    id: 5,
+    question: 'How long does admin verification take?',
+    answer: 'Admin verification typically takes 24-48 hours. You will receive an email notification once your account is verified. Only verified buyers can bid, and only verified sellers can list materials.'
+  },
+  {
+    id: 6,
+    question: 'Can I list materials as both auction and RFQ?',
+    answer: 'No, when listing a material, you must choose either auction (default) or RFQ only. Auction listings allow real-time bidding, while RFQ listings allow buyers to request custom quotes.'
+  },
+  {
+    id: 7,
+    question: 'What happens if I win an auction?',
+    answer: 'Once an auction ends and you are the highest bidder (and reserve price is met if set), you win the auction. The seller will be notified, and you can proceed with the transaction details.'
+  },
+  {
+    id: 8,
+    question: 'How do I place a bid?',
+    answer: 'Navigate to an active auction, enter your bid amount (must be at least 2% higher than current bid), and click "Place Bid". Your bid will be updated in real-time for all participants.'
+  },
+  {
+    id: 9,
+    question: 'Can sellers bid on their own materials?',
+    answer: 'No, sellers cannot bid on their own materials. This ensures fair and transparent auctions for all participants.'
+  },
+  {
+    id: 10,
+    question: 'What is a reserve price?',
+    answer: 'A reserve price is the minimum price a seller is willing to accept. If the auction ends below the reserve price, the seller is not obligated to sell. Reserve prices are optional and can be set when listing materials.'
+  }
 ];
-
 
 export const getContactPageFAQs = () => {
   return faqData.slice(0, 4);

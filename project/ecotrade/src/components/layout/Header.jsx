@@ -1,111 +1,60 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { useCart } from "../../contexts/CartContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useSocket } from "../../contexts/SocketContext";
+import { notificationAPI } from "../../api/notificationAPI";
 import {
   Menu,
   X,
-  ShoppingCart,
   User,
   Search,
   ChevronDown,
   LogOut,
   Settings,
+  Gavel,
   Package,
-  Phone,
-  Heart,
+  ShoppingBag,
+  FileText,
+  BarChart3,
+  Cog,
+  Code,
+  Bell,
 } from "lucide-react";
 import Button from "../ui/Button";
-import { fetchCollections } from "../../store/slices/collectionSlice";
-import { fetchCollections as fetchCollectionsWithTypes } from "../../store/slices/productSlice";
+import NotificationsPanel from "../NotificationsPanel";
 
 const Header = () => {
   const headerRef = useRef(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // For mobile menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isScrolledNavOpen, setIsScrolledNavOpen] = useState(false); // For scrolled desktop menu
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isMobileMenuBreakpoint, setIsMobileMenuBreakpoint] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const menuCloseTimeoutRef = useRef(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const profileMenuRef = useRef(null);
+  const infoRef = useRef(null);
 
-  const { cart } = useCart();
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { socket } = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
-  const profileMenuRef = useRef(null);
-  const scrolledNavRef = useRef(null);
-  const dispatch = useDispatch();
-  const { collections } = useSelector((state) => state.collections);
-  const { collections: collectionsWithTypes } = useSelector((state) => state.products);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
-  useEffect(() => {
-    dispatch(fetchCollections({ includeInactive: false }));
-    dispatch(fetchCollectionsWithTypes());
-  }, [dispatch]);
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const toggleProfileMenu = () => setIsProfileMenuOpen(!isProfileMenuOpen);
-  const toggleScrolledNav = () => setIsScrolledNavOpen(!isScrolledNavOpen);
-
-  const handleProfileMenuEnter = () => {
-    clearTimeout(menuCloseTimeoutRef.current);
-    setIsProfileMenuOpen(true);
-  };
-
-  const handleProfileMenuLeave = () => {
-    menuCloseTimeoutRef.current = setTimeout(() => {
-      setIsProfileMenuOpen(false);
-    }, 200);
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    setIsProfileMenuOpen(false);
-    navigate("/");
-  };
-
-  // Check screen size for responsive behavior
-  useEffect(() => {
-    const checkScreenSize = () => {
-      setIsMobileMenuBreakpoint(window.innerWidth < 1024); // Adjusted breakpoint for new layout
-    };
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
-  }, []);
-
-  // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
-      if (window.scrollY <= 50) {
-        setIsScrolledNavOpen(false); // Close scrolled nav when returning to top
-      }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close menus on route change
   useEffect(() => {
     setIsMenuOpen(false);
     setIsProfileMenuOpen(false);
-    setActiveDropdown(null);
-    setIsScrolledNavOpen(false);
+    setIsSearchOpen(false);
   }, [location]);
 
-  // Handle clicking outside of menus to close them
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -116,18 +65,17 @@ const Header = () => {
         setIsProfileMenuOpen(false);
       }
       if (
-        isScrolledNavOpen &&
-        scrolledNavRef.current &&
-        !scrolledNavRef.current.contains(event.target)
+        isInfoOpen &&
+        infoRef.current &&
+        !infoRef.current.contains(event.target)
       ) {
-        setIsScrolledNavOpen(false);
+        setIsInfoOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isProfileMenuOpen, isScrolledNavOpen]);
+  }, [isProfileMenuOpen, isInfoOpen]);
 
-  // Set CSS variable --header-height so pages can offset the fixed header
   useEffect(() => {
     const updateHeaderHeight = () => {
       try {
@@ -137,565 +85,470 @@ const Header = () => {
         // ignore
       }
     };
-
     updateHeaderHeight();
     window.addEventListener('resize', updateHeaderHeight);
     return () => window.removeEventListener('resize', updateHeaderHeight);
-  }, [isMobileMenuBreakpoint, isScrolled, isMenuOpen, isScrolledNavOpen]);
+  }, [isMenuOpen, isScrolled, isSearchOpen]);
 
-  // Create dynamic menu helper
-  const getCollectionMenu = (collectionName) => {
-    const collection = Array.isArray(collections)
-      ? collections.find(c => {
-          if (!c || typeof c !== 'object' || !c.name) return false;
-          return String(c.name).toLowerCase() === collectionName.toLowerCase();
-        })
-      : null;
-
-    const collectionWithTypes = Array.isArray(collectionsWithTypes)
-      ? collectionsWithTypes.find(c => {
-          if (!c || typeof c !== 'object' || !c.name) return false;
-          return String(c.name).toLowerCase() === collectionName.toLowerCase();
-        })
-      : null;
-
-    const types = [];
-    if (collectionWithTypes && Array.isArray(collectionWithTypes.types)) {
-      collectionWithTypes.types.slice(0, 3).forEach(type => {
-        if (type && typeof type === 'object' && type.name) {
-          const typeName = String(type.name);
-          if (typeName) {
-            types.push({
-              name: typeName,
-              path: `/products?types=${encodeURIComponent(typeName)}`
-            });
-          }
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!isAuthenticated || !user) return;
+      try {
+        const result = await notificationAPI.getAll({ limit: 100 });
+        if (result.success && result.data) {
+          const unread = result.data.filter(n => !n.isRead).length;
+          setUnreadNotificationCount(unread);
         }
-      });
+      } catch (error) {
+        console.error('Failed to fetch unread notification count:', error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // Refetch when notifications panel closes (in case notifications were marked as read)
+    if (!isNotificationsOpen) {
+      fetchUnreadCount();
     }
+  }, [isAuthenticated, user, isNotificationsOpen]);
 
-    const conditions = [
-      { name: "Like New", path: "/products?condition=Like+New" },
-      { name: "Excellent", path: "/products?condition=Excellent" },
-      { name: "Good", path: "/products?condition=Good" },
-    ];
+  // Listen for real-time notifications via socket
+  useEffect(() => {
+    if (socket) {
+      const handleNewNotification = (notification) => {
+        if (!notification.isRead) {
+          setUnreadNotificationCount(prev => prev + 1);
+        }
+      };
 
-    const images = types.slice(0, 2).map(type => ({
-      name: type.name,
-      path: type.path,
-      src: (collection && collection.image) ? String(collection.image) : "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg",
-      alt: `Refurbished ${type.name}`
-    }));
+      socket.on('new-notification', handleNewNotification);
 
-    return { types, conditions, images };
+      return () => {
+        socket.off('new-notification', handleNewNotification);
+      };
+    }
+  }, [socket]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/materials?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+      setIsSearchOpen(false);
+      setIsMenuOpen(false);
+    }
   };
 
-  // Navigation menu data
-  const smartphonesMenu = getCollectionMenu('Smartphones');
-  const laptopsMenu = getCollectionMenu('Laptops');
-
-  // Use dynamic menus or fallback to popular brands
-  const activeSmartphonesMenu = smartphonesMenu.types && smartphonesMenu.types.length > 0 ? smartphonesMenu : {
-    types: [
-      { name: "Apple iPhone", path: "/products/smartphones?search=Apple" },
-      { name: "Samsung Galaxy", path: "/products/smartphones?search=Samsung" },
-      { name: "OnePlus", path: "/products/smartphones?search=OnePlus" },
-      { name: "Google Pixel", path: "/products/smartphones?search=Google" },
-      { name: "Xiaomi", path: "/products/smartphones?search=Xiaomi" }
-    ],
-    conditions: [
-      { name: "Like New", path: "/products/smartphones?condition=Like+New" },
-      { name: "Excellent", path: "/products/smartphones?condition=Excellent" },
-      { name: "Good", path: "/products/smartphones?condition=Good" },
-    ],
-    images: [
-      {
-        name: "Premium Smartphones",
-        path: "/products/smartphones?condition=Like+New",
-        src: "https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg",
-        alt: "Refurbished Premium Smartphones"
-      },
-      {
-        name: "Budget Friendly",
-        path: "/products/smartphones?condition=Good",
-        src: "https://images.pexels.com/photos/699122/pexels-photo-699122.jpeg",
-        alt: "Affordable Refurbished Phones"
-      }
-    ]
+  const handleLogout = async () => {
+    await logout();
+    setIsProfileMenuOpen(false);
+    navigate("/");
   };
-
-  const activeLaptopsMenu = laptopsMenu.types && laptopsMenu.types.length > 0 ? laptopsMenu : {
-    types: [
-      { name: "Apple MacBook", path: "/products/laptops?search=Apple" },
-      { name: "Dell", path: "/products/laptops?search=Dell" },
-      { name: "HP", path: "/products/laptops?search=HP" },
-      { name: "Lenovo", path: "/products/laptops?search=Lenovo" },
-      { name: "ASUS", path: "/products/laptops?search=ASUS" }
-    ],
-    images: [
-      {
-        name: "Premium Laptops",
-        path: "/products/laptops?condition=Like+New",
-        src: "https://images.pexels.com/photos/18105/pexels-photo.jpg",
-        alt: "Refurbished Premium Laptops"
-      },
-      {
-        name: "Business Laptops",
-        path: "/products/laptops?search=business",
-        src: "https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg",
-        alt: "Refurbished Business Laptops"
-      }
-    ]
-  };
-
-  const DesktopNavLinks = () => (
-    <ul className="flex items-center justify-center space-x-6 xl:space-x-8">
-      <li>
-        <Link to="/" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a]">
-          Home
-        </Link>
-      </li>
-      <li>
-        <Link to="/products" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a]">
-          All Products
-        </Link>
-      </li>
-      <li className="relative group">
-        <Link to="/products/smartphones" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a] flex items-center">
-          Smartphones
-          <ChevronDown className="ml-1 h-3 w-3 relative top-[3px]" />
-        </Link>
-        <div className="absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md p-6 z-50 transition-all duration-300 transform opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 translate-y-2" style={{ minWidth: "500px" }}>
-          <div className="flex justify-between items-start space-x-8">
-            <div className="flex-1">
-              <h4 className="font-semibold text-base mb-4 text-[#01364a]">Explore Smartphones</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {activeSmartphonesMenu.images.map((image) => (
-                  <Link to={image.path} key={image.name} className="block text-center hover:opacity-90 transition-opacity group/item">
-                    <div className="w-full h-32 flex items-center justify-center rounded-md overflow-hidden bg-gray-50">
-                      <img src={image.src} alt={image.alt} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-800 mt-2 group-hover/item:text-emerald-600">{image.name}</p>
-                  </Link>
-                ))}
-              </div>
-              <Link to="/products/smartphones" className="block mt-4 text-center text-sm font-medium text-emerald-600 hover:text-emerald-700">
-                View All Smartphones →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </li>
-      <li className="relative group">
-        <Link to="/products/laptops" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a] flex items-center">
-          Laptops <ChevronDown className="ml-1 h-3 w-3 relative top-[3px]" />
-        </Link>
-        <div className="absolute left-0 top-full mt-2 bg-white shadow-lg rounded-md p-6 z-50 transition-all duration-300 transform opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 translate-y-2" style={{ minWidth: "500px" }}>
-          <div className="flex justify-between items-start space-x-8">
-            <div className="flex-1">
-              <h4 className="font-semibold text-base mb-4 text-[#01364a]">Explore Laptops</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {activeLaptopsMenu.images.map((image) => (
-                  <Link to={image.path} key={image.name} className="block text-center hover:opacity-90 transition-opacity group/item">
-                    <div className="w-full h-32 flex items-center justify-center rounded-md overflow-hidden bg-gray-50">
-                      <img src={image.src} alt={image.alt} className="w-full h-full object-cover group-hover/item:scale-105 transition-transform" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-800 mt-2 group-hover/item:text-emerald-600">{image.name}</p>
-                  </Link>
-                ))}
-              </div>
-              <Link to="/products/laptops" className="block mt-4 text-center text-sm font-medium text-emerald-600 hover:text-emerald-700">
-                View All Laptops →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </li>
-      <li><Link to="/products?filter=new" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a]">New Arrivals</Link></li>
-      <li><Link to="/products?filter=featured" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a]">Featured Products</Link></li>
-      <li><Link to="/about" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a]">About</Link></li>
-      <li><Link to="/contact" className="text-sm font-medium transition-colors hover:text-emerald-600 text-[#01364a]">Contact</Link></li>
-    </ul>
-  );
 
   return (
-    <header ref={headerRef} className="fixed top-0 z-50 w-full bg-white shadow-md transition-all duration-300">
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* --- Top Bar (Logo, Search, Icons) --- */}
-       {/* --- Top Bar (Logo, Search, Icons) --- */}
-        <div className="flex items-center justify-between py-3 sm:py-4">
+    <>
+    <header
+      ref={headerRef}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled
+          ? "bg-white shadow-md"
+          : "bg-white"
+      }`}
+    >
+      <div className="container mx-auto px-3 sm:px-4">
+        <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+            <img 
+              src="/logo_light.png" 
+              alt="EcoTrade Logo" 
+              className="h-8 sm:h-10 md:h-12 w-auto object-contain"
+            />
+            <div className="text-xl sm:text-2xl font-bold text-green-600 hidden sm:block">EcoTrade</div>
+          </Link>
 
-          {/* === LEFT SECTION: Mobile Menu & Logo / Desktop Logo & Scrolled Nav === */}
-          <div className="flex justify-start items-center lg:w-auto">
-             {/* Mobile Menu Toggle */}
-             <button className="lg:hidden p-3 -ml-2 text-[#01364a] hover:bg-gray-100 rounded-md transition-colors" onClick={toggleMenu} aria-label="Open mobile menu">
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-             </button>
-             {/* MOBILE LOGO MOVED HERE */}
-             <Link to="/" className="lg:hidden flex items-center flex-shrink-0 space-x-2">
-  <img 
-    src="/logo_light.png" 
-    alt="Reeown Logo" 
-    className="h-8 w-8 object-contain"
-  />
-  <span className="text-2xl font-bold text-[#01364a]">
-    Ree<span className="text-green-600">own</span>
-  </span>
-</Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden xl:flex items-center space-x-4 2xl:space-x-6">
+            <Link
+              to="/"
+              className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors whitespace-nowrap"
+            >
+              Home
+            </Link>
+            <Link
+              to="/auctions"
+              className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors flex items-center gap-1 whitespace-nowrap"
+            >
+              <Gavel className="h-4 w-4" />
+              Auctions
+            </Link>
 
-             {/* Desktop Left Content */}
-             <div className="hidden lg:flex items-center space-x-4">
-                {isScrolled && (
-                    <button onClick={toggleScrolledNav} className="p-2 -ml-2 rounded-full hover:bg-gray-100" aria-label="Open navigation menu">
-                        {isScrolledNavOpen ? <X className="h-6 w-6 text-[#01364a]" /> : <Menu className="h-6 w-6 text-[#01364a]" />}
-                    </button>
-                )}
-                <Link to="/" className="flex items-center flex-shrink-0">
-                  <span className="text-2xl font-bold text-[#01364a]">Ree<span className="text-green-600">own</span></span>
+            {user?.userType === 'seller' && user?.isVerified && (
+              <>
+                <Link
+                  to="/seller/my-auctions"
+                  className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors whitespace-nowrap"
+                >
+                  My Auctions
                 </Link>
-             </div>
+                <Link
+                  to="/seller/create-auction"
+                  className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors whitespace-nowrap"
+                >
+                  Add New Auction
+                </Link>
+              </>
+            )}
+            {user?.userType === 'buyer' && user?.isVerified && (
+              <Link
+                to="/buyer/my-bids"
+                className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors whitespace-nowrap"
+              >
+                My Bids
+              </Link>
+            )}
+            
+            {/* Info Dropdown */}
+            <div className="relative" ref={infoRef}>
+              <button
+                onClick={() => setIsInfoOpen(!isInfoOpen)}
+                className="text-sm font-medium text-gray-700 hover:text-green-600 transition-colors flex items-center gap-1 whitespace-nowrap"
+              >
+                Info
+                <ChevronDown className={`h-4 w-4 transition-transform ${isInfoOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {isInfoOpen && (
+                <div className="absolute top-full left-0 mt-2 w-40 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                  <Link
+                    to="/about"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                    onClick={() => setIsInfoOpen(false)}
+                  >
+                    About
+                  </Link>
+                  <Link
+                    to="/contact"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                    onClick={() => setIsInfoOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </div>
+              )}
+            </div>
+          </nav>
+
+          {/* Search Bar - Desktop & Tablet */}
+          <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-md mx-3 lg:mx-6">
+            <form onSubmit={handleSearch} className="w-full relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search materials..."
+                className="w-full px-3 lg:px-4 py-1.5 lg:py-2 pl-9 lg:pl-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <Search className="absolute left-2.5 lg:left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </form>
           </div>
 
-          {/* === CENTER SECTION: Desktop Search (Mobile logo removed) === */}
-          <div className="hidden lg:flex lg:flex-1 lg:px-8 lg:w-auto justify-center">
-             {/* Desktop Search Bar */}
-             <div className="w-full">
-                <form onSubmit={handleSearch} className="relative max-w-xl mx-auto">
-                    <input
-                        type="text"
-                        placeholder="What are you looking for?"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full h-11 border border-gray-300 rounded-md pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#01364a]"
-                    />
-                    <button type="submit" className="absolute right-0 top-0 h-full w-12 flex items-center justify-center bg-[#01364a] hover:bg-opacity-90 rounded-r-md" aria-label="Search">
-                        <Search className="h-5 w-5 text-white" />
-                    </button>
-                </form>
-             </div>
-          </div>
-          
-          {/* === RIGHT SECTION: Icons & Desktop Contact === */}
-          <div className="flex items-center justify-end space-x-2 md:space-x-4 lg:w-auto flex-1">
-           <div className="hidden lg:block text-right">
-  <p className="text-sm font-semibold text-[#01364a] whitespace-nowrap">
-    <a href="tel:8861009443" className="flex items-center justify-end hover:underline">
-      <Phone width={3} className="h-3 w-3 mr-1 mt-1 " />
-      <span>8861009443</span>
-    </a>
-  </p>
-  <p className="text-xs text-[#01374ae1]">Mon - Sat | 8am - 8pm</p>
-</div>
+          {/* User Menu & Actions */}
+          <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
+            {/* Mobile Search Button */}
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="md:hidden p-2 text-gray-700 hover:text-green-600 transition-colors"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5" />
+            </button>
 
-             <Link to="/wishlist" className="relative p-2 sm:p-3 text-[#01364a] hover:text-red-500 hover:bg-gray-100 rounded-md transition-colors" aria-label="Wishlist">
-                <Heart className="h-6 w-6" />
-                {user && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                        {user.wishlist?.length || 0}
-                    </span>
+            {/* Notifications Bell */}
+            {isAuthenticated && (
+              <button
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="relative p-2 text-gray-700 hover:text-green-600 transition-colors"
+                aria-label="Notifications"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadNotificationCount > 0 && (
+                  <span className="absolute top-0 right-0 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-red-500 rounded-full border-2 border-white">
+                    {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                  </span>
                 )}
-             </Link>
+              </button>
+            )}
 
-             <Link to="/cart" className="relative p-2 sm:p-3 text-[#01364a] hover:text-emerald-600 hover:bg-gray-100 rounded-md transition-colors" aria-label={`Cart with ${cart.items.length} items`}>
-                <ShoppingCart className="h-6 w-6" />
-                {cart.items.length > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white">
-                        {cart.items.reduce((total, item) => total + item.quantity, 0)}
-                    </span>
-                )}
-             </Link>
-
-             <div ref={profileMenuRef} className="relative profile-menu" onMouseEnter={handleProfileMenuEnter} onMouseLeave={handleProfileMenuLeave}>
-                <button onClick={toggleProfileMenu} className="flex items-center p-2 sm:p-3 text-[#01364a] hover:text-emerald-600 hover:bg-gray-100 rounded-md transition-colors" aria-label="User account menu">
-                    <User className="h-6 w-6" />
+            {isAuthenticated ? (
+              <div className="relative" ref={profileMenuRef}>
+                <button
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  className="flex items-center space-x-1 sm:space-x-2 text-gray-700 hover:text-green-600 transition-colors"
+                >
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-green-100 flex items-center justify-center">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
+                  </div>
+                  <span className="hidden lg:block text-sm font-medium max-w-[120px] truncate">{user?.name}</span>
+                  <ChevronDown className="hidden lg:block h-4 w-4" />
                 </button>
                 {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 rounded-md bg-white py-2 shadow-lg border border-gray-100 z-30">
-                        {isAuthenticated ? (
-                            <>
-                                <div className="border-b border-gray-100 px-4 py-2">
-                                    <p className="text-sm font-medium text-[#01364a] truncate">{user?.name}</p>
-                                    <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                                    {isAdmin && <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#01364a] text-white mt-1">Admin</span>}
-                                </div>
-                                {isAdmin && <Link to="/admin" onClick={() => setIsProfileMenuOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><Settings className="mr-2 h-4 w-4" />Admin Dashboard</Link>}
-                                <Link to="/account" onClick={() => setIsProfileMenuOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><User className="mr-2 h-4 w-4" />My Account</Link>
-                                <Link to="/orders" onClick={() => setIsProfileMenuOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><Package className="mr-2 h-4 w-4" />My Orders</Link>
-                                <Link to="/wishlist" onClick={() => setIsProfileMenuOpen(false)} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><Heart className="mr-2 h-4 w-4" />My Wishlist</Link>
-                                <button onClick={handleLogout} className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"><LogOut className="mr-2 h-4 w-4" />Sign out</button>
-                            </>
-                        ) : (
-                            <>
-                                <Link to="/login" onClick={() => setIsProfileMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Sign in</Link>
-                                <Link to="/register" onClick={() => setIsProfileMenuOpen(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Create account</Link>
-                            </>
-                        )}
+                  <div className="absolute right-0 mt-2 w-48 sm:w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100 lg:hidden">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                     </div>
+                    <Link
+                      to="/account"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                      onClick={() => setIsProfileMenuOpen(false)}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Account
+                    </Link>
+                    {user?.userType === 'seller' && user?.isVerified && (
+                      <>
+                        <Link
+                          to="/seller/create-auction"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <Package className="h-4 w-4" />
+                          Add New Auction
+                        </Link>
+                        <Link
+                          to="/seller/my-auctions"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <FileText className="h-4 w-4" />
+                          My Auctions
+                        </Link>
+                        <Link
+                          to="/seller/analytics"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                          Analytics
+                        </Link>
+                      </>
+                    )}
+                    {user?.userType === 'buyer' && user?.isVerified && (
+                      <>
+                        <Link
+                          to="/buyer/my-bids"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <Gavel className="h-4 w-4" />
+                          My Bids
+                        </Link>
+                        <Link
+                          to="/buyer/analytics"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <BarChart3 className="h-4 w-4" />
+                          Live Analytics
+                        </Link>
+                      </>
+                    )}
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        Admin Panel
+                      </Link>
+                    )}
+                    <div className="border-t border-gray-100 my-1"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
                 )}
-             </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Link to="/login">
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                    Login
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="primary" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                    Register
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="xl:hidden p-2 text-gray-700 hover:text-green-600 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
 
-        {/* --- Bottom Nav Bar (Desktop, not scrolled) --- */}
-        <div className={`hidden lg:block transition-all duration-300 ease-in-out ${isScrolled ? 'h-0 opacity-0 invisible' : 'opacity-100 visible translate-y-0 py-4'}`}>
-          <DesktopNavLinks />
-        </div>
+        {/* Mobile Search Bar */}
+        {isSearchOpen && (
+          <div className="md:hidden border-t border-gray-200 px-3 sm:px-4 py-3 bg-white">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search materials..."
+                className="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                autoFocus
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            </form>
+          </div>
+        )}
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="xl:hidden absolute top-full left-0 right-0 bg-white border-t border-gray-200 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <nav className="container mx-auto px-3 sm:px-4 py-4 space-y-1">
+              {/* Main Navigation */}
+              <Link
+                to="/"
+                className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/auctions"
+                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Gavel className="h-4 w-4" />
+                Auctions
+              </Link>
+
+              {/* Divider */}
+              <div className="border-t border-gray-200 my-2"></div>
+
+              {/* User-specific links */}
+              {user?.userType === 'seller' && user?.isVerified && (
+                <>
+                  <Link
+                    to="/seller/my-auctions"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FileText className="h-4 w-4" />
+                    My Auctions
+                  </Link>
+                  <Link
+                    to="/seller/create-auction"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Package className="h-4 w-4" />
+                    Add New Auction
+                  </Link>
+                  <Link
+                    to="/seller/analytics"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    Analytics
+                  </Link>
+                </>
+              )}
+              {user?.userType === 'buyer' && user?.isVerified && (
+                <>
+                  <Link
+                    to="/buyer/my-bids"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Gavel className="h-4 w-4" />
+                    My Bids
+                  </Link>
+                  <Link
+                    to="/buyer/analytics"
+                    className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    Live Analytics
+                  </Link>
+                </>
+              )}
+
+              {/* Divider */}
+              <div className="border-t border-gray-200 my-2"></div>
+
+              {/* General Links */}
+              <div className="px-4 py-2">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Info</p>
+                <Link
+                  to="/about"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  About
+                </Link>
+                <Link
+                  to="/contact"
+                  className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Contact
+                </Link>
+              </div>
+
+              {/* Admin Link */}
+              {isAdmin && (
+                <>
+                  <div className="border-t border-gray-200 my-2"></div>
+                  <Link
+                    to="/admin"
+                    className="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Admin Panel
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
       </div>
-
-      {/* --- Scrolled Navigation Dropdown (Desktop) --- */}
-      {!isMobileMenuBreakpoint && isScrolledNavOpen && (
-        <div ref={scrolledNavRef} className="absolute top-full left-0 w-full bg-white shadow-lg ">
-          <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <DesktopNavLinks />
-          </div>
-        </div>
-      )}
-
-      {/* --- Mobile Menu --- */}
-      {isMobileMenuBreakpoint && isMenuOpen && (
-       <div className="mt-4 pb-4 max-h-[calc(100vh-80px)] overflow-y-auto">
-             <form onSubmit={handleSearch} className="mb-4 flex items-center">
-               <div className="relative w-full">
-                 <input
-                   type="text"
-                   placeholder="Search products..."
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                   className="w-full rounded-md border border-gray-300 pl-3 pr-10 py-3 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                 />
-                 <button
-                   type="submit"
-                   className="absolute right-0 top-0 flex h-full items-center justify-center px-3 text-gray-500"
-                 >
-                   <Search className="h-4 w-4" />
-                 </button>
-               </div>
-             </form>
-             <ul className="divide-y divide-gray-100 rounded-lg bg-white border border-gray-200 max-h-fit overflow-y-auto">
-               <li>
-                 <Link
-                   to="/"
-                   className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   Home
-                 </Link>
-               </li>
-               <li>
-                 <Link
-                   to="/products"
-                   className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   All Products
-                 </Link>
-               </li>
-
-               {/* Cooking Appliances Mobile Submenu */}
-               <li className="relative">
-                 <button
-                   onClick={() =>
-                     setActiveDropdown(
-                       activeDropdown === "smartphones-mobile"
-                         ? null
-                         : "smartphones-mobile"
-                     )
-                   }
-                   className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   Smartphones{" "}
-                   <ChevronDown
-                     className={`h-4 w-4 transition-transform ${
-                       activeDropdown === "smartphones-mobile" ? "rotate-180" : ""
-                     }`}
-                   />
-                 </button>
-                 {activeDropdown === "smartphones-mobile" && (
-                   <div className="bg-gray-50 px-4 py-2">
-                     <h4 className="font-semibold text-xs mb-2 text-gray-700">
-                       Brands
-                     </h4>
-                     <ul className="space-y-1 mb-3">
-                       {activeSmartphonesMenu.types.map((item) => (
-                         <li key={item.name}>
-                           <Link
-                             to={item.path}
-                             className="block text-sm text-gray-600 hover:text-emerald-600 pl-2 py-1"
-                           >
-                             {item.name}
-                           </Link>
-                         </li>
-                       ))}
-                     </ul>
-                     <h4 className="font-semibold text-xs mb-2 text-gray-700">
-                       Condition
-                     </h4>
-                     <ul className="space-y-1">
-                       {activeSmartphonesMenu.conditions.map((item) => (
-                         <li key={item.name}>
-                           <Link
-                             to={item.path}
-                             className="block text-sm text-gray-600 hover:text-emerald-600 pl-2 py-1"
-                           >
-                             {item.name}
-                           </Link>
-                         </li>
-                       ))}
-                     </ul>
-                   </div>
-                 )}
-               </li>
-
-               {/* Laptops Mobile Submenu */}
-               <li className="relative">
-                 <button
-                   onClick={() =>
-                     setActiveDropdown(
-                       activeDropdown === "laptops-mobile" ? null : "laptops-mobile"
-                     )
-                   }
-                   className="flex items-center justify-between w-full px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   Laptops{" "}
-                   <ChevronDown
-                     className={`h-4 w-4 transition-transform ${
-                       activeDropdown === "laptops-mobile" ? "rotate-180" : ""
-                     }`}
-                   />
-                 </button>
-                 {activeDropdown === "laptops-mobile" && (
-                   <div className="bg-gray-50 px-4 py-2">
-                     <h4 className="font-semibold text-xs mb-2 text-gray-700">
-                       Brands
-                     </h4>
-                     <ul className="space-y-1 mb-3">
-                       {activeLaptopsMenu.types.map((item) => (
-                         <li key={item.name}>
-                           <Link
-                             to={item.path}
-                             className="block text-sm text-gray-600 hover:text-emerald-600 pl-2 py-1"
-                           >
-                             {item.name}
-                           </Link>
-                         </li>
-                       ))}
-                     </ul>
-                     <h4 className="font-semibold text-xs mb-2 text-gray-700">
-                       Condition
-                     </h4>
-                     <ul className="space-y-1">
-                       <li>
-                         <Link
-                           to="/products/laptops?condition=Like+New"
-                           className="block text-sm text-gray-600 hover:text-emerald-600 pl-2 py-1"
-                         >
-                           Like New
-                         </Link>
-                       </li>
-                       <li>
-                         <Link
-                           to="/products/laptops?condition=Excellent"
-                           className="block text-sm text-gray-600 hover:text-emerald-600 pl-2 py-1"
-                         >
-                           Excellent
-                         </Link>
-                       </li>
-                       <li>
-                         <Link
-                           to="/products/laptops?condition=Good"
-                           className="block text-sm text-gray-600 hover:text-emerald-600 pl-2 py-1"
-                         >
-                           Good
-                         </Link>
-                       </li>
-                     </ul>
-                   </div>
-                 )}
-               </li>
-
-               <li>
-                 <Link
-                   to="/products?filter=featured"
-                   className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   Featured Products
-                 </Link>
-               </li>
-               <li>
-                 <Link
-                   to="/products?filter=new"
-                   className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   New Arrivals
-                 </Link>
-               </li>
-               <li>
-                 <Link
-                   to="/about"
-                   className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   About
-                 </Link>
-               </li>
-               <li>
-                 <Link
-                   to="/contact"
-                   className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50"
-                 >
-                   Contact
-                 </Link>
-               </li>
-               {!isAuthenticated ? (
-                 <li className="px-4 py-3">
-                   <div className="flex flex-col space-y-2">
-                     <Button
-                       fullWidth
-                       onClick={() => navigate("/login")}
-                       variant="primary"
-                     >
-                       Sign In
-                     </Button>
-                     <Button
-                       fullWidth
-                       onClick={() => navigate("/register")}
-                       variant="outline"
-                     >
-                       Create Account
-                     </Button>
-                   </div>
-                 </li>
-               ) : (
-                 <li className="px-4 py-3">
-                   <div className="flex flex-col space-y-2">
-                     {isAdmin && (
-                       <Button
-                         fullWidth
-                         onClick={() => navigate("/admin")}
-                         variant="primary"
-                       >
-                         Admin Dashboard
-                       </Button>
-                     )}
-                     <Button
-                       fullWidth
-                       onClick={() => navigate("/account")}
-                       variant="outline"
-                     >
-                       My Account
-                     </Button>
-                     <Button
-                       fullWidth
-                       onClick={handleLogout}
-                       variant="outline"
-                       leftIcon={<LogOut className="h-4 w-4" />}
-                     >
-                       Sign Out
-                     </Button>
-                   </div>
-                 </li>
-               )}
-             </ul>
-           </div>
-      )}
     </header>
+    
+    {/* Notifications Panel */}
+    {isAuthenticated && (
+      <NotificationsPanel 
+        isOpen={isNotificationsOpen} 
+        onClose={() => setIsNotificationsOpen(false)}
+        onNotificationRead={() => {
+          // Refetch unread count when notifications are marked as read
+          notificationAPI.getAll({ limit: 100 }).then(result => {
+            if (result.success && result.data) {
+              const unread = result.data.filter(n => !n.isRead).length;
+              setUnreadNotificationCount(unread);
+            }
+          }).catch(err => console.error('Failed to fetch unread count:', err));
+        }}
+      />
+    )}
+  </>
   );
 };
 

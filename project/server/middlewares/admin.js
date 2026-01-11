@@ -3,6 +3,21 @@ const bcrypt = require('bcryptjs');
 
 const initializeAdmin = async () => {
   try {
+    // Wait for MongoDB connection
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      console.log('Waiting for MongoDB connection before initializing admin...');
+      await new Promise((resolve) => {
+        if (mongoose.connection.readyState === 1) {
+          resolve();
+        } else {
+          mongoose.connection.once('connected', resolve);
+          // Timeout after 10 seconds
+          setTimeout(resolve, 10000);
+        }
+      });
+    }
+
     const adminEmail = process.env.ADMIN_EMAIL;
     const adminPassword = process.env.ADMIN_PASSWORD;
     
@@ -51,4 +66,16 @@ const initializeAdmin = async () => {
   }
 };
 
-module.exports = initializeAdmin;
+// Admin middleware to restrict access to admin users only
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === 'admin') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Access denied. Admins only.' });
+  }
+};
+
+module.exports = {
+  initializeAdmin,
+  admin
+};

@@ -1,50 +1,44 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, DollarSign, Wrench, Recycle, Building2 } from 'lucide-react';
+import { Gavel, Package, UserPlus } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const ActionBoxes = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
 
   const actions = [
     {
-      icon: ShoppingBag,
-      title: 'Buy',
-      description: 'Explore premium refurbished electronics',
+      icon: Gavel,
+      title: 'Live Auctions',
+      description: 'Participate in real-time bidding for recyclable materials',
       color: 'from-green-500 to-emerald-600',
       hoverColor: 'hover:from-green-600 hover:to-emerald-700',
-      action: () => navigate('/products')
+      action: () => navigate('/auctions')
     },
     {
-      icon: DollarSign,
-      title: 'Sell',
-      description: 'Sell your old devices for instant cash',
-      color: 'from-blue-500 to-cyan-600',
-      hoverColor: 'hover:from-blue-600 hover:to-cyan-700',
-      action: () => navigate('/sell')
-    },
-    {
-      icon: Wrench,
-      title: 'Repair',
-      description: 'Get your devices repaired by experts',
+      icon: UserPlus,
+      title: 'Register',
+      description: 'Join as buyer or seller',
       color: 'from-orange-500 to-amber-600',
       hoverColor: 'hover:from-orange-600 hover:to-amber-700',
-      action: () => navigate('/repair')
+      action: () => navigate(isAuthenticated ? '/account' : '/register')
     },
     {
-      icon: Recycle,
-      title: 'Recycle',
-      description: 'Dispose e-waste responsibly',
+      icon: Package,
+      title: 'Sell Materials',
+      description: 'Create auctions for your recyclable materials',
+      color: 'from-blue-500 to-cyan-600',
+      hoverColor: 'hover:from-blue-600 hover:to-cyan-700',
+      action: () => navigate(isAuthenticated && user?.userType === 'seller' ? '/seller/create-auction' : '/register')
+    },
+    {
+      icon: Gavel,
+      title: 'My Bids',
+      description: 'Track your bids and auction activity',
       color: 'from-purple-500 to-violet-600',
       hoverColor: 'hover:from-purple-600 hover:to-violet-700',
-      action: () => navigate('/recycle')
-    },
-    {
-      icon: Building2,
-      title: 'Business',
-      description: 'Bulk orders for businesses & retailers',
-      color: 'from-indigo-500 to-blue-600',
-      hoverColor: 'hover:from-indigo-600 hover:to-blue-700',
-      action: () => navigate('/business')
+      action: () => navigate(isAuthenticated && user?.userType === 'buyer' ? '/buyer/my-bids' : '/register')
     }
   ];
 
@@ -53,10 +47,10 @@ const ActionBoxes = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-900 mb-3">What Would You Like To Do?</h2>
-            <p className="text-gray-600">Choose from our comprehensive range of services</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">Welcome to EcoTrade</h2>
+            <p className="text-gray-600">Premium Circular Economy Marketplace</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {actions.map((action, index) => {
               const Icon = action.icon;
               return (

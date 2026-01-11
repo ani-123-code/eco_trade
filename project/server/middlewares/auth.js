@@ -23,6 +23,9 @@ const protect = async (req, res, next) => {
         });
       }
 
+      // Note: We don't block unverified users here - let individual routes decide
+      // Some routes (like viewing own materials) should be accessible even if not verified
+
       req.user = user;
       next();
     } catch (error) {

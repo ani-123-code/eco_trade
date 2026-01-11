@@ -4,7 +4,7 @@ function newsletterSubscriptionTemplate(subscriberData) {
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #0EA5A4 0%, #056D6A 100%); padding: 40px 30px; text-align: center;">
         <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
-          ${process.env.APP_NAME || 'Reeown'}
+          ${process.env.APP_NAME || 'EcoTrade'}
         </h1>
         <p style="color: #ffffff; margin: 8px 0 0 0; font-size: 13px; opacity: 0.95;">
           Administrative Notification
@@ -61,7 +61,7 @@ function newsletterSubscriptionTemplate(subscriberData) {
       <!-- Footer -->
       <div style="background-color: #f9fafb; padding: 24px 30px; border-top: 1px solid #e5e7eb;">
         <p style="color: #6b7280; font-size: 11px; margin: 0; text-align: center; line-height: 1.5;">
-          This is an automated system notification from ${process.env.APP_NAME || 'Reeown'} Newsletter Management.<br>
+          This is an automated system notification from ${process.env.APP_NAME || 'EcoTrade'} Newsletter Management.<br>
           Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
         </p>
       </div>
@@ -75,7 +75,7 @@ function welcomeNewsletterTemplate(subscriberData) {
       <!-- Header -->
       <div style="background: linear-gradient(135deg, #0EA5A4 0%, #056D6A 100%); padding: 40px 30px; text-align: center;">
         <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">
-          ${process.env.APP_NAME || 'Reeown'}
+          ${process.env.APP_NAME || 'EcoTrade'}
         </h1>
         <p style="color: #ffffff; margin: 8px 0 0 0; font-size: 13px; opacity: 0.95;">
           Welcome to Our Community
@@ -119,7 +119,7 @@ function welcomeNewsletterTemplate(subscriberData) {
         </p>
         <p style="color: #374151; font-size: 12px; margin: 0; font-weight: 500;">
           Best regards,<br>
-          <span style="color: #056D6A; font-weight: 700;">The ${process.env.APP_NAME || 'Reeown'} Team</span>
+          <span style="color: #056D6A; font-weight: 700;">The ${process.env.APP_NAME || 'EcoTrade'} Team</span>
         </p>
         
         <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e5e7eb;">

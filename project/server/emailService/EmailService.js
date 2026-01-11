@@ -17,6 +17,16 @@ const {
   orderAdminNotificationTemplate,
   orderStatusUpdateTemplate
 } = require('./templates/orderTemplates');
+const {
+  bidPlacedTemplate,
+  bidOutbidTemplate,
+  bidWonTemplate,
+  tokenPaymentReminderTemplate,
+  auctionApprovedTemplate,
+  auctionScheduledTemplate,
+  auctionRejectedTemplate,
+  userWarningTemplate
+} = require('./templates/auctionTemplates');
 
 class EmailService {
   constructor() {
@@ -693,6 +703,139 @@ const customerMailOptions = {
       return { success: true, message: 'WhatsApp notification queued' };
     } catch (error) {
       console.error('Error sending WhatsApp notification:', error);
+      throw error;
+    }
+  }
+
+  // Auction notification emails
+  async sendBidPlacedEmail(buyerEmail, buyerName, auctionName, bidAmount, auctionId) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: buyerEmail,
+        subject: `Bid Placed Successfully - ${auctionName}`,
+        html: bidPlacedTemplate(buyerName, auctionName, bidAmount, auctionId)
+      };
+      await this.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending bid placed email:', error);
+      throw error;
+    }
+  }
+
+  async sendBidOutbidEmail(buyerEmail, buyerName, auctionName, currentBid, auctionId) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: buyerEmail,
+        subject: `You've Been Outbid - ${auctionName}`,
+        html: bidOutbidTemplate(buyerName, auctionName, currentBid, auctionId)
+      };
+      await this.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending bid outbid email:', error);
+      throw error;
+    }
+  }
+
+  async sendBidWonEmail(buyerEmail, buyerName, auctionName, winningBid, tokenAmount, tokenDeadline, auctionId) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: buyerEmail,
+        subject: `🎉 Congratulations! You Won - ${auctionName}`,
+        html: bidWonTemplate(buyerName, auctionName, winningBid, tokenAmount, tokenDeadline, auctionId)
+      };
+      await this.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending bid won email:', error);
+      throw error;
+    }
+  }
+
+  async sendTokenPaymentReminderEmail(buyerEmail, buyerName, auctionName, tokenAmount, hoursRemaining, auctionId) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: buyerEmail,
+        subject: `⚠️ Token Payment Reminder - ${auctionName}`,
+        html: tokenPaymentReminderTemplate(buyerName, auctionName, tokenAmount, hoursRemaining, auctionId)
+      };
+      await this.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending token payment reminder email:', error);
+      throw error;
+    }
+  }
+
+  async sendAuctionApprovedEmail(sellerEmail, sellerName, auctionName, auctionId) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: sellerEmail,
+        subject: `Auction Approved - ${auctionName}`,
+        html: auctionApprovedTemplate(sellerName, auctionName, auctionId)
+      };
+      await this.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending auction approved email:', error);
+      throw error;
+    }
+  }
+
+  async sendAuctionScheduledEmail(sellerEmail, sellerName, auctionName, publishDate, auctionId) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: sellerEmail,
+        subject: `Auction Scheduled - ${auctionName}`,
+        html: auctionScheduledTemplate(sellerName, auctionName, publishDate, auctionId)
+      };
+      await this.sendMail(mailOptions);
+      return { success: true };
+    } catch (error) {
+      console.error('Error sending auction scheduled email:', error);
+      throw error;
+    }
+  }
+
+  async sendWarningEmail(userEmail, userName, warningMessage, adminName) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: userEmail,
+        subject: `Account Warning - ${process.env.APP_NAME || 'EcoTrade'}`,
+        html: userWarningTemplate(userName, warningMessage, adminName)
+      };
+
+      const result = await this.sendMail(mailOptions);
+      console.log('Warning email sent to user:', result.messageId || 'sent');
+      return result;
+    } catch (error) {
+      console.error('Error sending warning email:', error);
+      throw error;
+    }
+  }
+
+  async sendAuctionRejectedEmail(sellerEmail, sellerName, auctionName) {
+    try {
+      const mailOptions = {
+        from: `"${process.env.APP_NAME || 'EcoTrade'}" <${process.env.GMAIL_USER}>`,
+        to: sellerEmail,
+        subject: `Auction Request Rejected - ${process.env.APP_NAME || 'EcoTrade'}`,
+        html: auctionRejectedTemplate(sellerName, auctionName)
+      };
+
+      const result = await this.sendMail(mailOptions);
+      console.log('Auction rejected email sent to seller:', result.messageId || 'sent');
+      return result;
+    } catch (error) {
+      console.error('Error sending auction rejected email:', error);
       throw error;
     }
   }

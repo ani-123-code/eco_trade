@@ -433,10 +433,10 @@ function orderConfirmationTemplate(order, user) {
       <!-- Footer -->
       <div class="footer" style="background-color: #056D6A; color: white; padding: 30px; text-align: center;">
         <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">
-          Thank you for shopping with ${process.env.APP_NAME || 'Reeown'}!
+          Thank you for shopping with ${process.env.APP_NAME || 'EcoTrade'}!
         </p>
         <p style="margin: 0; font-size: 14px; opacity: 0.9;">
-          © ${new Date().getFullYear()} ${process.env.APP_NAME || 'Reeown'}. All rights reserved.
+          © ${new Date().getFullYear()} ${process.env.APP_NAME || 'EcoTrade'}. All rights reserved.
         </p>
       </div>
     </div>
@@ -871,10 +871,10 @@ function orderAdminNotificationTemplate(order, user) {
       <!-- Footer -->
       <div class="footer" style="background-color: #056D6A; color: white; padding: 30px; text-align: center;">
         <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 600;">
-          ${process.env.APP_NAME || 'Reeown'} - Admin Panel
+          ${process.env.APP_NAME || 'EcoTrade'} - Admin Panel
         </p>
         <p style="margin: 0; font-size: 14px; opacity: 0.9;">
-          © ${new Date().getFullYear()} ${process.env.APP_NAME || 'Reeown'}. All rights reserved.
+          © ${new Date().getFullYear()} ${process.env.APP_NAME || 'EcoTrade'}. All rights reserved.
         </p>
       </div>
     </div>
@@ -1087,10 +1087,10 @@ function orderStatusUpdateTemplate(order, user, newStatus, oldStatus) {
       <!-- Footer -->
       <div style="background-color: #056D6A; color: white; padding: 25px; text-align: center;">
         <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">
-          Thank you for shopping with ${process.env.APP_NAME || 'Reeown'}!
+          Thank you for shopping with ${process.env.APP_NAME || 'EcoTrade'}!
         </p>
         <p style="margin: 0; font-size: 12px; opacity: 0.9;">
-          © ${new Date().getFullYear()} ${process.env.APP_NAME || 'Reeown'}. All rights reserved.
+          © ${new Date().getFullYear()} ${process.env.APP_NAME || 'EcoTrade'}. All rights reserved.
         </p>
       </div>
     </div>

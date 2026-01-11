@@ -13,25 +13,25 @@ const AboutPage = () => {
     {
       icon: Award,
       title: 'Quality Excellence',
-      description: '40-point quality checks ensure every device meets our strict certification standards.'
+      description: 'Rigorous verification and quality checks ensure all materials meet industry standards and specifications.'
     },
     {
       icon: Zap,
       title: 'Sustainability',
-      description: 'Reducing e-waste and promoting circular economy through refurbished electronics.'
+      description: 'Promoting circular economy by transforming waste materials into valuable resources through efficient trading.'
     },
     {
       icon: Shield,
       title: 'Trust & Reliability',
-      description: 'Certified refurbished devices backed by comprehensive warranty and support.'
+      description: 'Admin-verified transactions and transparent bidding process ensure secure and reliable trading for all parties.'
     }
   ];
 
   const stats = [
-    { number: '50,000+', label: 'Devices Refurbished' },
-    // { number: '500+', label: 'Products' },
+    { number: '10,000+', label: 'Materials Traded' },
+    { number: '500+', label: 'Active Auctions' },
     { number: '100+', label: 'Cities Served' },
-    { number: '20 Tons', label: 'E-Waste Prevented' }
+    { number: '50 Tons', label: 'Waste Recycled' }
   ];
 
   const team = [
@@ -56,18 +56,18 @@ const AboutPage = () => {
   ];
 
   return (
-    <div className="min-h-screen pt-8 pb-16">
+    <div className="min-h-screen pt-2 pb-2">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-r from-green-600 to-green-700 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">About Reeown</h1>
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">About EcoTrade</h1>
             <p className="text-xl md:text-2xl text-gray-200 mb-8">
-              Leading the way in sustainable technology with premium refurbished electronics for everyone
+              Transforming waste into value through real-time auction platform
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/products">
-                <Button variant="secondary" size="lg">Shop Now</Button>
+              <Link to="/auctions">
+                <Button variant="secondary" size="lg">View Auctions</Button>
               </Link>
               <Link to="/contact">
                 <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-green-700">
@@ -104,7 +104,10 @@ const AboutPage = () => {
                 <h2 className="text-4xl font-bold mb-6">Our Story</h2>
                 <div className="space-y-4 text-gray-600 text-lg">
                   <p>
-                    Reeown was founded with a simple mission: make premium technology accessible while protecting our planet. We believe everyone deserves quality electronics without the premium price tag or environmental cost. Each device undergoes comprehensive 40-point testing and certification, ensuring it meets strict quality standards. When you choose Reeown, you're making a smart financial decision and an environmentally conscious choice that helps combat e-waste.
+                    EcoTrade is a premium circular economy marketplace connecting verified buyers and sellers of recyclable materials. Our real-time auction platform enables transparent trading of e-waste, metals, plastics, paper, and textile materials through live bidding auctions. We're building a sustainable circular economy where recyclable materials find new value and purpose.
+                  </p>
+                  <p>
+                    All users (both buyers and sellers) must complete document verification before gaining access to the platform. This ensures a secure, trusted marketplace where all participants are verified and authenticated.
                   </p>
                 </div>
               </div>
@@ -130,7 +133,7 @@ const AboutPage = () => {
               </div>
               <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
               <p className="text-gray-600 text-lg">
-                To make premium certified refurbished electronics accessible to everyone while reducing e-waste and promoting sustainable technology consumption for a better tomorrow.
+                To create a sustainable circular economy by connecting verified buyers and sellers of recyclable materials through transparent real-time auctions, transforming materials into valuable resources.
               </p>
             </div>
             <div>
@@ -139,7 +142,7 @@ const AboutPage = () => {
               </div>
               <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
               <p className="text-gray-600 text-lg">
-                To be India's leading platform for certified refurbished electronics, creating a circular economy that benefits people and the planet.
+                To become India's premier circular economy marketplace, revolutionizing how recyclable materials are valued, traded, and repurposed to build a sustainable future.
               </p>
             </div>
           </div>
@@ -176,7 +179,7 @@ const AboutPage = () => {
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-4">Meet Our Team</h2>
             <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              The passionate people behind Reeown's success
+              The passionate people behind EcoTrade
             </p>
           </div>
           
@@ -204,9 +207,9 @@ const AboutPage = () => {
       <section className="py-16 bg-green-600 text-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Why Choose Reeown?</h2>
+            <h2 className="text-4xl font-bold mb-4">Why Choose EcoTrade?</h2>
             <p className="text-gray-200 text-lg max-w-2xl mx-auto">
-              Your trusted partner for quality refurbished electronics and sustainable technology solutions
+              Your trusted partner for recyclable materials trading and sustainable circular economy solutions
             </p>
           </div>
           
@@ -215,8 +218,8 @@ const AboutPage = () => {
               <div className="bg-white/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Truck className="h-8 w-8" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Free Shipping</h3>
-              <p className="text-gray-200">Free shipping on all refurbished devices across India</p>
+              <h3 className="text-lg font-semibold mb-2">Real-Time Bidding</h3>
+              <p className="text-gray-200">Live auction system with instant bid updates and notifications</p>
             </div>
             
             <div className="text-center">
@@ -224,7 +227,7 @@ const AboutPage = () => {
                 <Shield className="h-8 w-8" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Quality Assured</h3>
-              <p className="text-gray-200">Every device is thoroughly tested and certified before sale</p>
+              <p className="text-gray-200">All materials are verified and quality-checked before listing</p>
             </div>
             
             <div className="text-center">
@@ -232,7 +235,7 @@ const AboutPage = () => {
                 <Users className="h-8 w-8" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Expert Support</h3>
-              <p className="text-gray-200">Dedicated customer support team available 24/7</p>
+              <p className="text-gray-200">Admin moderation ensures fair trading and dispute resolution</p>
             </div>
             
             <div className="text-center">
@@ -240,7 +243,7 @@ const AboutPage = () => {
                 <Award className="h-8 w-8" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Eco-Friendly</h3>
-              <p className="text-gray-200">Reducing e-waste through sustainable refurbishment</p>
+              <p className="text-gray-200">Promoting waste recycling and circular economy principles</p>
             </div>
           </div>
         </div>
@@ -252,14 +255,14 @@ const AboutPage = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl font-bold mb-4">Ready to Make a Difference?</h2>
             <p className="text-gray-600 text-lg mb-8">
-              Join thousands of satisfied customers who trust Reeown for quality refurbished electronics
+              Join our growing community of buyers and sellers trading recyclable materials sustainably
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/products">
-                <Button variant="primary" size="lg">Start Shopping</Button>
+              <Link to="/auctions">
+                <Button variant="primary" size="lg">Browse Auctions</Button>
               </Link>
-              <Link to="/contact">
-                <Button variant="outline" size="lg">Get in Touch</Button>
+              <Link to="/register">
+                <Button variant="outline" size="lg">Get Started</Button>
               </Link>
             </div>
           </div>

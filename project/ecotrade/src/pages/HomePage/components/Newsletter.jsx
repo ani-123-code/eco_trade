@@ -40,7 +40,7 @@ const handleSubmit = async (e) => {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-4 text-white">Stay Updated</h2>
           <p className="text-xl text-gray-200 mb-8">
-            Subscribe to our newsletter for exclusive deals on refurbished devices, new arrivals, and tech tips
+            Subscribe to our newsletter for new auction listings, bidding tips, and sustainable trading insights
           </p>
     
            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row max-w-md mx-auto">

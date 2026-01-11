@@ -18,7 +18,8 @@ const RegisterPage = () => {
     name: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    userType: '' // 'buyer' or 'seller'
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -80,6 +81,10 @@ const RegisterPage = () => {
       errors.confirmPassword = 'Passwords do not match';
     }
 
+    if (!formData.userType) {
+      errors.userType = 'Please select whether you are a buyer or seller';
+    }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -103,7 +108,8 @@ const RegisterPage = () => {
       const result = await register({
         name: formData.name.trim(),
         email: formData.email.trim(),
-        password: formData.password
+        password: formData.password,
+        userType: formData.userType
       });
 
       if (result.success) {
@@ -113,6 +119,7 @@ const RegisterPage = () => {
           navigate('/verify-email', {
             state: {
               email: formData.email,
+              userType: formData.userType,
               message: result.message || 'Registration successful! Please check your email to verify your account.',
             },
           });
@@ -137,7 +144,7 @@ const RegisterPage = () => {
           <div className="p-6 sm:p-8">
             <div className="text-center mb-8">
               <h1 className="text-2xl font-bold mb-2">Create Account</h1>
-              <p className="text-gray-600">Join Reeown and start shopping for premium refurbished devices today</p>
+              <p className="text-gray-600">Join EcoTrade and start trading recyclable materials today</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
@@ -218,6 +225,55 @@ const RegisterPage = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  I want to register as
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, userType: 'buyer' }));
+                      if (validationErrors.userType) {
+                        setValidationErrors(prev => ({ ...prev, userType: '' }));
+                      }
+                    }}
+                    className={`p-4 border-2 rounded-lg transition-all ${
+                      formData.userType === 'buyer'
+                        ? 'border-green-600 bg-green-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-semibold mb-1">Buyer</div>
+                      <div className="text-xs text-gray-600">Participate in real-time auctions and place bids</div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, userType: 'seller' }));
+                      if (validationErrors.userType) {
+                        setValidationErrors(prev => ({ ...prev, userType: '' }));
+                      }
+                    }}
+                    className={`p-4 border-2 rounded-lg transition-all ${
+                      formData.userType === 'seller'
+                        ? 'border-green-600 bg-green-50'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-lg font-semibold mb-1">Seller</div>
+                      <div className="text-xs text-gray-600">Create and manage auctions for your materials</div>
+                    </div>
+                  </button>
+                </div>
+                {validationErrors.userType && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.userType}</p>
+                )}
+              </div>
+
               {formData.password && (
                 <div className="text-sm">
                   <p className="text-gray-600 mb-2">Password strength:</p>
@@ -269,9 +325,27 @@ const RegisterPage = () => {
             </div>
 
             <div className="mt-4 text-center">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 mb-2">
                 By creating an account, you'll receive a verification email to confirm your address.
               </p>
+              {formData.userType && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
+                  <p className="text-xs text-blue-900 mb-2">
+                    <strong>Important Verification Process:</strong>
+                  </p>
+                  <p className="text-xs text-blue-800 mb-2">
+                    All users must complete document verification before gaining access to the platform:
+                  </p>
+                  <ul className="text-xs text-blue-800 text-left list-disc list-inside space-y-1 mb-2">
+                    <li>Email verification (sent immediately after registration)</li>
+                    <li>Document verification by admin (within 24-48 hours)</li>
+                    <li>Account activation after admin approval</li>
+                  </ul>
+                  <p className="text-xs text-blue-800">
+                    Once your {formData.userType} account is verified, you'll be able to {formData.userType === 'seller' ? 'create and manage auctions' : 'participate in live auctions and place bids'}.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

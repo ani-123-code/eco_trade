@@ -24,10 +24,10 @@ const Footer = () => {
             {/* Company Info */}
             <div className="lg:col-span-2">
               <Link to="/" className="flex items-center mb-4">
-                <span className="text-3xl font-bold text-white">Ree<span className="text-[#10B981]">own</span></span>
+                <span className="text-3xl font-bold text-white">Eco<span className="text-[#10B981]">Trade</span></span>
               </Link>
               <p className="text-gray-300 mb-6">
-                Reeown offers premium certified refurbished electronics that are good for your wallet and the planet. Every device is thoroughly tested, certified, and comes with comprehensive warranty. Join us in reducing e-waste while enjoying quality technology.
+                EcoTrade is a premium circular economy marketplace connecting verified buyers and sellers. Our real-time auction platform enables transparent trading of recyclable materials including e-waste, metals, plastics, paper, and textiles. Join us in building a sustainable future through responsible material trading.
               </p>
               <div className="space-y-3">
                 <div className="flex items-start">
@@ -46,9 +46,10 @@ const Footer = () => {
               <h3 className="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Quick Links</h3>
               <ul className="space-y-2">
                 <li><Link to="/" className="text-gray-300 hover:text-[#10B981] transition-colors">Home</Link></li>
-                <li><Link to="/products" className="text-gray-300 hover:text-[#10B981] transition-colors">Shop</Link></li>
+                <li><Link to="/auctions" className="text-gray-300 hover:text-[#10B981] transition-colors">Auctions</Link></li>
                 <li><Link to="/about" className="text-gray-300 hover:text-[#10B981] transition-colors">About Us</Link></li>
                 <li><Link to="/contact" className="text-gray-300 hover:text-[#10B981] transition-colors">Contact</Link></li>
+                <li><Link to="/register" className="text-gray-300 hover:text-[#10B981] transition-colors">Register</Link></li>
               </ul>
             </div>
 
@@ -97,7 +98,7 @@ const Footer = () => {
           <div className="border-t border-gray-700 py-6">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-gray-300 text-sm mb-4 md:mb-0">
-                &copy; {new Date().getFullYear()} Reeown. All rights reserved. Powered by <a href="https://www.eco-dispose.com" target="_blank" rel="noopener noreferrer" className="underline">EcoDispose</a>
+                &copy; {new Date().getFullYear()} EcoTrade. All rights reserved.
               </p>
 
               <div className="flex space-x-4">
