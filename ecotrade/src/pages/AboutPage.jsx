@@ -90,8 +90,8 @@ const AboutPage = () => {
               </div>
               <div className="relative">
                 <img
-                  src="https://images.pexels.com/photos/3637728/pexels-photo-3637728.jpeg"
-                  alt="EcoTrade - Circular Economy Marketplace"
+                  src="https://images.pexels.com/photos/1072824/pexels-photo-1072824.jpeg?auto=compress&cs=tinysrgb&w=1920"
+                  alt="EcoTrade - Circular Economy Marketplace - Recycling and Sustainability"
                   className="rounded-lg shadow-lg h-96 w-full object-cover"
                 />
               </div>
