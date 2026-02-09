@@ -27,13 +27,6 @@ const AboutPage = () => {
     }
   ];
 
-  const stats = [
-    { number: '10,000+', label: 'Materials Traded' },
-    { number: '500+', label: 'Active Auctions' },
-    { number: '100+', label: 'Cities Served' },
-    { number: '50 Tons', label: 'Waste Recycled' }
-  ];
-
   const team = [
     {
       name: 'Rajesh Kumar',
@@ -79,22 +72,6 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold text-green-700 mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Story Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -113,10 +90,10 @@ const AboutPage = () => {
               </div>
               <div className="relative">
                 <img
-  src="https://images.pexels.com/photos/3637728/pexels-photo-3637728.jpeg"
-  alt="About US"
-  className="rounded-lg shadow-lg h-96 w-full object-cover"
-/>
+                  src="https://images.pexels.com/photos/3637728/pexels-photo-3637728.jpeg"
+                  alt="EcoTrade - Circular Economy Marketplace"
+                  className="rounded-lg shadow-lg h-96 w-full object-cover"
+                />
               </div>
             </div>
           </div>
