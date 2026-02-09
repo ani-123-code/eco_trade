@@ -103,6 +103,7 @@ const AdminAuctions = () => {
   });
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [auctionDetails, setAuctionDetails] = useState(null);
 
   useEffect(() => {
     fetchAuctions();
@@ -161,9 +162,10 @@ const AdminAuctions = () => {
     setLoadingBids(true);
     setShowBidHistory(true);
     try {
-      const [bidResult, usersResult] = await Promise.all([
+      const [bidResult, usersResult, auctionResult] = await Promise.all([
         auctionAPI.getBidHistory(auctionId),
-        adminAPI.getUsers()
+        adminAPI.getUsers(),
+        auctionAPI.getById(auctionId)
       ]);
       if (bidResult.success) {
         setBidHistory(bidResult.data || []);
@@ -172,6 +174,9 @@ const AdminAuctions = () => {
         // Include verified buyers and admin users as potential bidders
         const buyers = usersResult.filter(u => (u.userType === 'buyer' && u.isVerified) || u.role === 'admin');
         setUsers(buyers);
+      }
+      if (auctionResult.success) {
+        setAuctionDetails(auctionResult.data);
       }
     } catch (error) {
       showError(error.response?.data?.message || 'Failed to fetch bid history');
@@ -593,6 +598,7 @@ const AdminAuctions = () => {
                     setSelectedAuction(null);
                     setEditingBid(null);
                     setShowAddBid(false);
+                    setAuctionDetails(null);
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -606,13 +612,123 @@ const AdminAuctions = () => {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
                   <p className="mt-4 text-gray-600">Loading bid history...</p>
                 </div>
-              ) : bidHistory.length === 0 ? (
-                <div className="text-center py-12">
-                  <History className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No bids found</p>
-                </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Seller Form Data - Material Details */}
+                  {auctionDetails && auctionDetails.material && (
+                    <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-4">
+                      <h3 className="font-semibold text-blue-900 mb-3 text-lg">Seller Form Data - Material Details</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700">Material Name:</span>
+                          <p className="text-gray-900">{auctionDetails.material.name || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Category:</span>
+                          <p className="text-gray-900 capitalize">{auctionDetails.material.category || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Quantity:</span>
+                          <p className="text-gray-900">{auctionDetails.material.quantity || '0'} {auctionDetails.material.unit || 'kg'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">Condition:</span>
+                          <p className="text-gray-900 capitalize">{auctionDetails.material.condition || 'N/A'}</p>
+                        </div>
+                        {auctionDetails.material.description && (
+                          <div className="md:col-span-2">
+                            <span className="font-medium text-gray-700">Description:</span>
+                            <p className="text-gray-900 mt-1 whitespace-pre-wrap">{auctionDetails.material.description}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.location && (
+                          <div className="md:col-span-2">
+                            <span className="font-medium text-gray-700">Location:</span>
+                            <p className="text-gray-900">
+                              {auctionDetails.material.location.address && `${auctionDetails.material.location.address}, `}
+                              {auctionDetails.material.location.city}, {auctionDetails.material.location.state}
+                              {auctionDetails.material.location.pincode && ` - ${auctionDetails.material.location.pincode}`}
+                            </p>
+                          </div>
+                        )}
+                        {auctionDetails.material.seller && (
+                          <div className="md:col-span-2 border-t pt-3 mt-2">
+                            <span className="font-medium text-gray-700">Seller Information:</span>
+                            <div className="mt-2 space-y-1">
+                              <p className="text-gray-900"><strong>Name:</strong> {auctionDetails.material.seller.name || 'N/A'}</p>
+                              {auctionDetails.material.seller.email && (
+                                <p className="text-gray-900"><strong>Email:</strong> {auctionDetails.material.seller.email}</p>
+                              )}
+                              {auctionDetails.material.seller.phoneNumber && (
+                                <p className="text-gray-900"><strong>Phone:</strong> {auctionDetails.material.seller.phoneNumber}</p>
+                              )}
+                              {auctionDetails.material.seller.address && (
+                                <p className="text-gray-900"><strong>Address:</strong> {auctionDetails.material.seller.address}</p>
+                              )}
+                              {auctionDetails.material.seller.city && (
+                                <p className="text-gray-900">
+                                  <strong>Location:</strong> {auctionDetails.material.seller.city}
+                                  {auctionDetails.material.seller.state && `, ${auctionDetails.material.seller.state}`}
+                                  {auctionDetails.material.seller.pincode && ` - ${auctionDetails.material.seller.pincode}`}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {/* Category-specific fields */}
+                        {auctionDetails.material.ewasteType && (
+                          <div>
+                            <span className="font-medium text-gray-700">E-Waste Type:</span>
+                            <p className="text-gray-900">{auctionDetails.material.ewasteType}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.metalType && (
+                          <div>
+                            <span className="font-medium text-gray-700">Metal Type:</span>
+                            <p className="text-gray-900">{auctionDetails.material.metalType}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.plasticType && (
+                          <div>
+                            <span className="font-medium text-gray-700">Plastic Type:</span>
+                            <p className="text-gray-900">{auctionDetails.material.plasticType}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.paperType && (
+                          <div>
+                            <span className="font-medium text-gray-700">Paper Type:</span>
+                            <p className="text-gray-900">{auctionDetails.material.paperType}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.textileType && (
+                          <div>
+                            <span className="font-medium text-gray-700">Textile Type:</span>
+                            <p className="text-gray-900">{auctionDetails.material.textileType}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.brand && (
+                          <div>
+                            <span className="font-medium text-gray-700">Brand:</span>
+                            <p className="text-gray-900">{auctionDetails.material.brand}</p>
+                          </div>
+                        )}
+                        {auctionDetails.material.brandList && (
+                          <div>
+                            <span className="font-medium text-gray-700">Brand List:</span>
+                            <p className="text-gray-900">{auctionDetails.material.brandList}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {bidHistory.length === 0 ? (
+                    <div className="text-center py-12">
+                      <History className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600">No bids found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
                   {/* Add Bid Form */}
                   {showAddBid && (
                     <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
@@ -694,7 +810,7 @@ const AdminAuctions = () => {
                     </div>
                   )}
 
-                  {bidHistory.map((bid, index) => (
+                      {bidHistory.map((bid, index) => (
                     <div
                       key={bid._id}
                       className={`p-4 rounded-lg border ${
@@ -915,6 +1031,8 @@ const AdminAuctions = () => {
                       )}
                     </div>
                   ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -941,6 +1059,7 @@ const AdminAuctions = () => {
                   setSelectedAuction(null);
                   setEditingBid(null);
                   setShowAddBid(false);
+                  setAuctionDetails(null);
                 }}
                 variant="outline"
                 fullWidth

@@ -44,10 +44,13 @@ const AuctionDetailPage = () => {
   const [userRole, setUserRole] = useState('buyer'); // 'admin', 'seller', 'buyer'
 
   useEffect(() => {
+    if (!id) return;
+    
     fetchAuction();
-    if (socket) {
+    
+    if (socket && id) {
       joinAuction(id);
-      socket.on('bid-updated', (data) => {
+      const handleBidUpdated = (data) => {
         if (data.auction && data.auction.currentBid) {
           setAuction(prev => ({
             ...prev,
@@ -60,18 +63,25 @@ const AuctionDetailPage = () => {
           setBidAmount(newMinBid.toFixed(2));
           showSuccess('New bid placed!');
           // Refresh bid history if user is seller/admin
-          if (userRole === 'seller' || userRole === 'admin') {
-            fetchBidHistory();
-          }
+          setUserRole(prevRole => {
+            if (prevRole === 'seller' || prevRole === 'admin') {
+              fetchBidHistory();
+            }
+            return prevRole;
+          });
         }
-      });
-      socket.on('auction-updated', (data) => {
+      };
+      
+      const handleAuctionUpdated = (data) => {
         if (data.status === 'ended' || data.status === 'seller-approved' || data.status === 'admin-approved') {
           setTimeRemaining({ ended: true });
           fetchAuction();
-          if (userRole === 'seller' || userRole === 'admin') {
-            fetchBidHistory();
-          }
+          setUserRole(prevRole => {
+            if (prevRole === 'seller' || prevRole === 'admin') {
+              fetchBidHistory();
+            }
+            return prevRole;
+          });
         }
         // Update auction status
         if (data.auctionId === id) {
@@ -83,14 +93,20 @@ const AuctionDetailPage = () => {
             purchaseOrder: data.purchaseOrder || prev.purchaseOrder
           }));
         }
-      });
+      };
+      
+      socket.on('bid-updated', handleBidUpdated);
+      socket.on('auction-updated', handleAuctionUpdated);
+      
+      return () => {
+        if (socket) {
+          socket.off('bid-updated', handleBidUpdated);
+          socket.off('auction-updated', handleAuctionUpdated);
+          leaveAuction(id);
+        }
+      };
     }
-    return () => {
-      if (socket) {
-        leaveAuction(id);
-      }
-    };
-  }, [id, socket]);
+  }, [id, socket, joinAuction, leaveAuction, showSuccess]);
 
   useEffect(() => {
     if (auction && !timeRemaining.ended) {
@@ -592,15 +608,19 @@ const AuctionDetailPage = () => {
               )}
               
               {/* Admin Approval Status - Only show when bid is approved (status: admin-approved) */}
+              {/* Only show winner/PO to the actual winner */}
               {auction.status === 'admin-approved' && (
                 <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded">
                   <p className="text-sm text-green-800 font-medium mb-1">
                     ✓ Bid Accepted by Admin
                   </p>
                   <p className="text-xs text-green-700">
-                    Transaction will proceed manually. Winner: {auction.winner?.name || 'N/A'}
+                    Transaction will proceed manually.
+                    {isWinning && auction.winner && (
+                      <> Winner: {auction.winner?.name || 'N/A'}</>
+                    )}
                   </p>
-                  {auction.purchaseOrder && (
+                  {isWinning && auction.purchaseOrder && (
                     <p className="text-xs text-green-700 mt-1">
                       Purchase Order: {auction.purchaseOrder}
                     </p>
@@ -623,7 +643,8 @@ const AuctionDetailPage = () => {
                         {isWinning ? 'You Won!' : 'Auction Ended'}
                       </span>
                     </div>
-                    {auction.winner && (
+                    {/* Only show winner name to the actual winner */}
+                    {isWinning && auction.winner && (
                       <p className="text-sm text-gray-600">
                         Winner: {auction.winner.name || 'N/A'}
                       </p>
@@ -803,7 +824,8 @@ const AuctionDetailPage = () => {
                     <div className="text-sm text-blue-800">
                       <p className="font-semibold mb-1">Bidding Closed</p>
                       <p>The seller has accepted a bid. This auction is now closed and waiting for admin final approval. No further bids can be placed.</p>
-                      {auction.winner && (
+                      {/* Only show winner to the actual winner */}
+                      {isWinning && auction.winner && (
                         <p className="mt-2 font-medium">Winner: {auction.winner.name || auction.currentBidder?.name || 'N/A'}</p>
                       )}
                     </div>
@@ -819,10 +841,11 @@ const AuctionDetailPage = () => {
                     <div className="text-sm text-green-800">
                       <p className="font-semibold mb-1">Auction Closed - Bid Approved by Admin</p>
                       <p>This auction is permanently closed. Admin has approved the bid and generated Purchase Order. No further bids are allowed.</p>
-                      {auction.winner && (
+                      {/* Only show winner and PO to the actual winner */}
+                      {isWinning && auction.winner && (
                         <p className="mt-2 font-medium">Winner: {auction.winner.name || auction.currentBidder?.name || 'N/A'}</p>
                       )}
-                      {auction.purchaseOrder && (
+                      {isWinning && auction.purchaseOrder && (
                         <p className="mt-1 font-medium">Purchase Order: {auction.purchaseOrder}</p>
                       )}
                     </div>
