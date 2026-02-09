@@ -1031,7 +1031,7 @@ const AdminAuctions = () => {
                       )}
                     </div>
                   ))}
-                    </>
+                    </div>
                   )}
                 </div>
               )}
