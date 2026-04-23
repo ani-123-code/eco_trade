@@ -1,19 +1,24 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+const replaceDatabaseName = (uri, dbName) => {
+  // Handles standard MongoDB URIs while preserving query parameters.
+  const match = uri.match(/^(mongodb(?:\+srv)?:\/\/[^/]+)\/([^?]*)(\?.*)?$/);
+  if (!match) return uri;
+  const [, base, , query = ''] = match;
+  return `${base}/${dbName}${query}`;
+};
+
 const connectDB = async () => {
   try {
     let mongoURI = process.env.MONGODB_URI;
     
-    // Ensure database name is ecotrade_db
+    // Ensure database name is ecotrade_dbnew
     if (mongoURI) {
-      // Remove existing database name from URI if present
-      const uriParts = mongoURI.split('/');
-      const baseURI = uriParts.slice(0, -1).join('/');
-      mongoURI = `${baseURI}/ecotrade_db`;
+      mongoURI = replaceDatabaseName(mongoURI, 'ecotrade_dbnew');
     } else {
       // Default connection string if MONGODB_URI is not set
-      mongoURI = 'mongodb://localhost:27017/ecotrade_db';
+      mongoURI = 'mongodb://localhost:27017/ecotrade_dbnew';
     }
     
     const options = {
@@ -24,7 +29,7 @@ const connectDB = async () => {
     };
     
     await mongoose.connect(mongoURI, options);
-    console.log('MongoDB Connected to ecotrade_db');
+    console.log('MongoDB Connected to ecotrade_dbnew');
   } catch (err) {
     console.error('DB connection error:', err.message);
     console.error('Please check:');
